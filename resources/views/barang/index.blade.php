@@ -3,7 +3,7 @@
 @section('content')
 <style>
     /* Global Overrides untuk Tema Premium Mentari Atlas */
-    body { background-color: #f8fafc !important; }
+    body { background-color: var(--bg-page, #f8fafc) !important; }
     
     .text-emerald-custom { color: #10b981 !important; }
     .text-slate-dark { color: #0f172a !important; }
@@ -48,7 +48,7 @@
     .table-mentari-compact th, .table-mentari-compact td { padding: 0.75rem 0.5rem !important; font-size: 0.85rem !important; }
 </style>
 
-<div class="container-fluid py-4" style="background-color: #f8fafc;">
+<div class="container-fluid py-4">
     
     {{-- HEADER --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
@@ -83,16 +83,16 @@
                             <div class="text-xs font-weight-bold text-emerald-custom text-uppercase mb-2 tracking-wider">
                                 <i class="fas fa-cloud-upload-alt me-1"></i> Import Massal via File CSV
                             </div>
-                            <form action="{{ route('barang.import') }}" method="POST" enctype="multipart/form-data" class="row g-3 align-items-center">
+                            <form action="{{ route('barang.import') }}" method="POST" enctype="multipart/form-data" class="m-0">
                                 @csrf
-                                <div class="col-md-7 col-lg-8">
-                                    <input type="file" name="file_csv" class="form-control form-control-sm bg-light" accept=".csv" required>
-                                    <div class="form-text mt-1" style="font-size: 0.7rem;">
-                                        <i class="fas fa-info-circle me-1 text-slate-muted"></i> Format Kolom: <strong>kode_barang, nama_barang, spesifikasi, merek, harga_beli, harga_jual, stok_bagus, stok_rusak</strong>
-                                    </div>
+                                <div class="input-group input-group-sm mb-1" style="max-width: 600px;">
+                                    <input type="file" name="file_csv" class="form-control bg-light" accept=".csv" required style="border-top-left-radius: 999px; border-bottom-left-radius: 999px;">
+                                    <button type="submit" class="btn btn-emerald-custom px-4 fw-bold shadow-sm" style="border-top-right-radius: 999px; border-bottom-right-radius: 999px;">
+                                        <i class="fas fa-sync-alt me-1"></i> Sinkronisasi Data
+                                    </button>
                                 </div>
-                                <div class="col-md-5 col-lg-4 text-md-end">
-                                    <button type="submit" class="btn btn-sm btn-emerald-custom px-4 shadow-sm rounded-pill w-100">Sinkronisasi Data</button>
+                                <div class="form-text" style="font-size: 0.7rem; padding-left: 15px;">
+                                    <i class="fas fa-info-circle me-1 text-slate-muted"></i> Format Kolom: <strong>kode_barang, nama_barang, spesifikasi, merek, harga_beli, harga_jual, stok_bagus, stok_rusak</strong>
                                 </div>
                             </form>
                         </div>
@@ -112,9 +112,10 @@
                         <thead>
                             <tr>
                                 <th class="ps-4 text-nowrap" style="width: 10%;">Kode SKU</th>
-                                <th style="width: 45%;">Info Produk Utama</th>
+                                <th style="width: 35%;">Info Produk Utama</th>
+                                <th class="text-end text-nowrap" style="width: 15%;">HPP (Rp)</th>
                                 <th class="text-end text-nowrap" style="width: 15%;">Harga Jual (Rp)</th>
-                                <th class="text-center text-nowrap" style="width: 15%;">Sisa Stok</th>
+                                <th class="text-center text-nowrap" style="width: 10%;">Sisa Stok</th>
                                 <th class="text-center pe-4" style="width: 15%; white-space: nowrap;">Aksi</th>
                             </tr>
                         </thead>
@@ -130,6 +131,9 @@
                                             @if($b->spesifikasi)<span><i class="fas fa-info-circle text-emerald-custom me-1"></i>{{ $b->spesifikasi }}</span>@endif
                                         </div>
                                     @endif
+                                </td>
+                                <td class="text-end fw-bold text-slate-muted text-nowrap" style="font-size: 0.9rem;">
+                                    {{ number_format($b->harga_beli, 0, ',', '.') }}
                                 </td>
                                 <td class="text-end fw-bold text-slate-dark text-nowrap" style="font-size: 0.9rem;">
                                     {{ number_format($b->harga_jual, 0, ',', '.') }}
@@ -147,7 +151,7 @@
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         
-                                        <a href="{{ route('barang.history', $b->id) }}" class="btn-action-circle btn-info-soft" title="Log Riwayat Stok"><i class="fas fa-history"></i></a>
+                                        <a href="{{ route('barang.history', $b->id) }}" class="btn-action-circle btn-info-soft" title="Log Riwayat"><i class="fas fa-history"></i></a>
                                         
                                         {{-- Tombol Edit --}}
                                         <button type="button" class="btn-action-circle btn-warning-soft" data-bs-toggle="modal" data-bs-target="#modalEditBarang{{ $b->id }}" title="Edit">

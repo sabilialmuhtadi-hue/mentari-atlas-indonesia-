@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Barang;
 use App\Models\StockHistory;
 use Illuminate\Support\Facades\DB;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
 
 class BarangController extends Controller
 {
@@ -75,6 +77,13 @@ class BarangController extends Controller
             );
         }
 
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'TAMBAH BARANG',
+            'description' => Auth::user()->name . ' menambahkan master barang baru: ' . $barang->kode_barang . ' - ' . $barang->nama_barang,
+            'ip_address' => request()->ip(),
+        ]);
+
         return back()->with('success', 'Barang baru dengan format SKU terstandarisasi berhasil ditambahkan.');
     }
 
@@ -112,8 +121,8 @@ class BarangController extends Controller
         $stokBagusSebelumnya = $barang->stok_akhir;
         $stokRusakSebelumnya = $barang->stok_rusak;
 
-        // 2. Update langsung sesuai inputan manual
-        $barang->update([
+        // 2. Cek perubahan data (selain stok)
+        $barang->fill([
             'kode_barang'    => strtoupper(trim($request->kode_barang)),
             'nama_barang'    => trim($request->nama_barang),
             'spesifikasi'    => trim($request->spesifikasi),
@@ -124,6 +133,27 @@ class BarangController extends Controller
             'stok_rusak'     => $request->stok_rusak, // Simpan stok rusak manual
             'tanggal_update' => date('Y-m-d H:i:s')
         ]);
+
+        $changes = [];
+        if ($barang->isDirty('nama_barang')) $changes[] = "Nama ({$barang->getOriginal('nama_barang')} -> {$barang->nama_barang})";
+        if ($barang->isDirty('harga_beli')) $changes[] = "HPP ({$barang->getOriginal('harga_beli')} -> {$barang->harga_beli})";
+        if ($barang->isDirty('harga_jual')) $changes[] = "Harga Jual ({$barang->getOriginal('harga_jual')} -> {$barang->harga_jual})";
+        if ($barang->isDirty('kode_barang')) $changes[] = "SKU ({$barang->getOriginal('kode_barang')} -> {$barang->kode_barang})";
+        if ($barang->isDirty('spesifikasi')) $changes[] = "Spek diperbarui";
+        if ($barang->isDirty('merek')) $changes[] = "Merek ({$barang->getOriginal('merek')} -> {$barang->merek})";
+
+        $barang->save();
+
+        if (count($changes) > 0) {
+            StockHistory::record(
+                $barang,
+                0,
+                'edit_data',
+                'BARANG-'.$barang->id,
+                "Edit Data: " . implode(', ', $changes),
+                $stokBagusSebelumnya
+            );
+        }
 
         // 3. Catat di history jika ada perubahan manual pada stok bagus
         if ($stokBagusSebelumnya != $request->stok_akhir) {
@@ -151,22 +181,32 @@ class BarangController extends Controller
             );
         }
 
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'EDIT BARANG',
+            'description' => Auth::user()->name . ' memperbarui data barang: ' . $barang->kode_barang,
+            'ip_address' => request()->ip(),
+        ]);
+
         return redirect()->route('barang.index')->with('success', 'Data barang dan stok fisik berhasil diperbarui secara manual.');
     }
 
     public function destroy($id)
     {
         $barang = Barang::findOrFail($id);
-        $sudahAdaTransaksi = \App\Models\PenjualanDetail::where('barang_id', $id)->exists();
 
-        if ($sudahAdaTransaksi) {
-            return back()->withErrors([
-                'error' => "Barang '{$barang->nama_barang}' tidak bisa dihapus karena sudah memiliki riwayat transaksi penjualan!"
-            ]);
-        }
+        $kodeBarang = $barang->kode_barang;
+        $namaBarang = $barang->nama_barang;
+        $barang->delete(); // Soft delete
 
-        $barang->delete();
-        return back()->with('success', 'Barang berhasil dihapus.');
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'HAPUS BARANG',
+            'description' => Auth::user()->name . ' menghapus (soft delete) data barang: ' . $kodeBarang . ' - ' . $namaBarang,
+            'ip_address' => request()->ip(),
+        ]);
+
+        return back()->with('success', 'Barang berhasil dihapus dari daftar aktif.');
     }
 
     public function importCsv(Request $request)

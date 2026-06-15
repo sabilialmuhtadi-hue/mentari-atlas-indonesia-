@@ -13,15 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Akun Superadmin
-        User::create([
-            'name' => 'Superadmin User',
-            'email' => 'superadmin@gmail.com',
-            'password' => Hash::make('admin123'),
-            'role' => 'superadmin',
-        ]);
-
-        // 2. Akun Direktur
+        // 1. Akun Direktur
         User::create([
             'name' => 'Direktur Utama',
             'email' => 'direktur@gmail.com',
@@ -29,15 +21,7 @@ class DatabaseSeeder extends Seeder
             'role' => 'direktur',
         ]);
 
-        // 3. Akun Admin
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@gmail.com',
-            'password' => Hash::make('admin123'),
-            'role' => 'admin',
-        ]);
-
-        // 4. Akun Sales
+        // 2. Akun Sales
         User::create([
             'name' => 'Sales User',
             'email' => 'sales@gmail.com',
@@ -45,20 +29,20 @@ class DatabaseSeeder extends Seeder
             'role' => 'sales',
         ]);
 
-        // 5. Akun Warehouse
+        // 3. Akun Warehouse
         User::create([
             'name' => 'Warehouse User',
             'email' => 'warehouse@gmail.com',
             'password' => Hash::make('warehouse123'),
-            'role' => 'warehouse',
+            'role' => 'admin_warehouse',
         ]);
 
-        // 6. Akun Keuangan
+        // 4. Akun Keuangan
         User::create([
             'name' => 'Keuangan User',
             'email' => 'keuangan@gmail.com',
             'password' => Hash::make('keuangan123'),
-            'role' => 'keuangan',
+            'role' => 'admin_keuangan',
         ]);
     }
 }

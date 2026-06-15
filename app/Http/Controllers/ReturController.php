@@ -8,6 +8,7 @@ use App\Models\Penjualan;
 use App\Models\Pembelian;
 use App\Models\Piutang;
 use App\Models\StockHistory;
+use App\Models\ActivityLog;
 use App\Models\PembayaranPiutang;
 use App\Models\Utang;
 use App\Models\PembayaranUtang;
@@ -30,9 +31,10 @@ class ReturController extends Controller
         
         $returs = DB::table('returs')
             ->leftJoin('penjualans', 'returs.referensi_id', '=', 'penjualans.id')
+            ->leftJoin('customers', 'penjualans.customer_id', '=', 'customers.id')
             ->leftJoin('barangs', 'returs.barang_id', '=', 'barangs.id')
             ->where('returs.tipe', 'penjualan')
-            ->select('returs.*', 'penjualans.no_so', 'barangs.nama_barang')
+            ->select('returs.*', 'penjualans.no_so', 'customers.nama_customer', 'barangs.nama_barang')
             ->orderBy('returs.id', 'asc')
             ->get()
             ->map(function($item) {
@@ -43,6 +45,7 @@ class ReturController extends Controller
                 $item->nominal_potongan = $item->nominal_potongan ?? 0;
                 
                 $item->penjualan = (object) ['no_so' => $item->no_so ?? 'N/A'];
+                $item->customer = (object) ['nama_customer' => $item->nama_customer ?? 'Umum'];
                 $item->barang = (object) ['nama_barang' => $item->nama_barang ?? 'N/A'];
                 $item->created_at = Carbon::parse($item->created_at);
                 return $item;
@@ -225,6 +228,13 @@ class ReturController extends Controller
                 ]);
             }
 
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'RETUR PENJUALAN',
+                'description' => Auth::user()->name . ' memproses klaim retur penjualan (Credit Note): ' . $noReturAuto,
+                'ip_address' => request()->ip(),
+            ]);
+
             DB::commit();
             return redirect()->back()->with('success', 'Klaim Retur Penjualan & Credit Note berhasil diproses.');
 
@@ -395,6 +405,13 @@ class ReturController extends Controller
                 }
                 $utang->save();
             }
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'RETUR PEMBELIAN',
+                'description' => Auth::user()->name . ' memproses klaim retur pembelian (Debit Note): ' . $noReturAuto,
+                'ip_address' => request()->ip(),
+            ]);
 
             DB::commit();
             return redirect()->back()->with('success', 'Retur Manual & Debit Note berhasil diproses. Beban utang ke supplier berhasil dipotong secara sah!');

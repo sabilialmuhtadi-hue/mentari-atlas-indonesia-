@@ -15,15 +15,10 @@ class BackOrderController extends Controller
      */
     public function index()
     {
-        // 1. Ambil semua data BO beserta relasinya
-        $data = BackOrder::with(['penjualan.customer', 'penjualan.user', 'barang'])->get();
-
-        // 2. Sortir menggunakan PHP Collection agar urutan rapi secara visual
-        // Prioritas: Status 'antrean' atau 'pending' muncul di atas, lalu urutkan nomor SO dari yang terlama
-        $backOrders = $data->sortBy(function($bo) {
-            $statusPriority = (strtolower($bo->status_bo) === 'terpenuhi' || strtolower($bo->status_bo) === 'selesai') ? 1 : 0;
-            return [$statusPriority, $bo->penjualan->no_so];
-        }, SORT_REGULAR, false); // <--- Sudah diubah menjadi false (Ascending/Terlama ke Terbaru)
+        // 1. Ambil semua data BO beserta relasinya dan urutkan murni berdasarkan waktu masuk (terlama ke terbaru)
+        $backOrders = BackOrder::with(['penjualan.customer', 'penjualan.user', 'barang'])
+            ->orderBy('created_at', 'asc')
+            ->get();
 
         return view('backorder.index', compact('backOrders'));
     }
@@ -38,6 +33,10 @@ class BackOrderController extends Controller
         // Validasi status ganda (jika sudah terpenuhi atau selesai)
         if (strtolower($bo->status_bo) === 'terpenuhi' || strtolower($bo->status_bo) === 'selesai') {
             return back()->withErrors(['error' => 'Antrean Back Order ini sudah terpenuhi sebelumnya.']);
+        }
+
+        if (in_array($bo->penjualan->status, ['draft', 'menunggu_restock'])) {
+            return back()->withErrors(['error' => 'Gagal: Order ini belum dipacking sama sekali. Silakan lakukan restock lalu klik tombol Packing di riwayat SO untuk mengirim pesanan secara utuh.']);
         }
 
         $barang = $bo->barang;

@@ -58,11 +58,7 @@
             <p class="text-slate-muted small mb-0 mt-1">Review rincian, periksa sisa limit, dan berikan persetujuan pesanan.</p>
         </div>
         
-        <div>
-            <a href="{{ route('penjualan.create') }}" class="btn btn-emerald-custom rounded-pill fw-bold shadow-sm px-4">
-                <i class="fas fa-plus me-2"></i> Buat Order
-            </a>
-        </div>
+
     </div>
 
     <div class="row">
@@ -74,11 +70,12 @@
                 </div>
                 
                 <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-custom-header text-center">
-                                <tr>
-                                    <th class="py-3 px-3">No SO</th>
+                    <div class="table-wrapper-mentari">
+                        <div class="table-responsive">
+                            <table class="table table-mentari table-mentari-compact align-middle mb-0" style="font-size: 0.85rem;">
+                                <thead class="text-center">
+                                    <tr>
+                                        <th class="py-3 px-3">No SO</th>
                                     <th class="py-3">Waktu Input</th>
                                     <th class="py-3 text-start">Customer</th>
                                     <th class="py-3">Sales</th>
@@ -143,21 +140,21 @@
                                                 <i class="fas fa-search me-1"></i> Rincian
                                             </button>
 
-                                            {{-- MODAL MINIMALIS --}}
+                                            {{-- MODAL GACORRR (COMPACT & PROFESSIONAL) --}}
                                             <div class="modal fade" id="modalApprove{{ $item->id }}" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog modal-lg modal-dialog-centered text-start">
                                                     <form action="{{ url('/penjualan/approve/'.$item->id) }}" method="POST" class="w-100">
                                                         @csrf
                                                         <div class="modal-content premium-modal border-0 shadow-lg">
                                                             
-                                                            <div class="modal-header bg-emerald-soft py-2">
-                                                                <h6 class="modal-title fw-bold text-slate-dark mb-0 fs-6">
-                                                                    <i class="fas fa-file-signature text-emerald-custom me-2"></i> Approval: {{ $item->no_so }}
-                                                                </h6>
+                                                            <div class="modal-header bg-white border-bottom py-3">
+                                                                <h5 class="modal-title fw-bolder mb-0 fs-6 text-slate-dark" style="letter-spacing: 0.3px;">
+                                                                    <i class="fas fa-file-signature text-emerald-custom me-2"></i> Otorisasi Sales Order: <span class="text-emerald-custom">{{ $item->no_so }}</span>
+                                                                </h5>
                                                                 <button type="button" class="btn-close btn-sm" data-bs-dismiss="modal"></button>
                                                             </div>
 
-                                                            <div class="modal-body modal-compact-body bg-slate-50">
+                                                            <div class="modal-body modal-compact-body bg-slate-50 p-3">
                                                                 
                                                                 @php
                                                                     $tier = strtolower($item->customer->tingkat_customer ?? 'reguler');
@@ -166,149 +163,186 @@
                                                                     $sisa_limit = $item->customer->sisa_plafon ?? 0;
                                                                 @endphp
                                                                 
-                                                                {{-- INFO CUSTOMER COMPACT TERINTEGRASI PLAFON DENGAN KARTU METRIK --}}
-                                                                <div class="mb-3 bg-white p-3 rounded border shadow-sm">
-                                                                    <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
-                                                                        <div class="bg-emerald-soft rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
-                                                                            <i class="fas fa-store text-emerald-custom fs-5"></i>
-                                                                        </div>
-                                                                        <div class="flex-grow-1">
-                                                                            <div class="d-flex align-items-center gap-2 mb-1">
-                                                                                <span class="fw-bold text-slate-dark fs-6">{{ $item->customer->nama_customer }}</span>
-                                                                                @if($tier == 'gold')
-                                                                                    <span class="badge bg-warning text-dark border border-warning shadow-sm" style="font-size: 0.6rem;"><i class="fas fa-crown text-danger"></i> GOLD</span>
-                                                                                @elseif($tier == 'silver')
-                                                                                    <span class="badge bg-light text-dark border shadow-sm" style="font-size: 0.6rem;"><i class="fas fa-award text-secondary"></i> SILVER</span>
-                                                                                @elseif($tier == 'bronze')
-                                                                                    <span class="badge badge-bronze shadow-sm" style="font-size: 0.6rem;"><i class="fas fa-medal"></i> BRONZE</span>
-                                                                                @else
-                                                                                    <span class="badge bg-secondary text-white shadow-sm" style="font-size: 0.6rem;"><i class="fas fa-user"></i> REGULER</span>
-                                                                                @endif
+                                                                <div class="row g-2 mb-3">
+                                                                    <div class="col-md-5">
+                                                                        {{-- INFO CUSTOMER CARD --}}
+                                                                        <div class="card card-custom h-100 border-left-emerald shadow-sm">
+                                                                            <div class="card-body p-2 d-flex flex-column justify-content-center">
+                                                                                <div class="d-flex align-items-center">
+                                                                                    <div class="bg-emerald-soft rounded-circle d-flex align-items-center justify-content-center me-2 shadow-sm" style="width: 36px; height: 36px; flex-shrink: 0;">
+                                                                                        <i class="fas fa-store text-emerald-custom fs-6"></i>
+                                                                                    </div>
+                                                                                    <div>
+                                                                                        <div class="d-flex align-items-center gap-1 mb-1">
+                                                                                            <span class="fw-bolder text-slate-dark" style="font-size: 0.85rem;">{{ $item->customer->nama_customer }}</span>
+                                                                                            @if($tier == 'gold')
+                                                                                                <span class="badge bg-warning text-dark shadow-sm border border-warning" style="font-size: 0.55rem;"><i class="fas fa-crown text-danger"></i> GOLD</span>
+                                                                                            @elseif($tier == 'silver')
+                                                                                                <span class="badge bg-light text-dark shadow-sm border" style="font-size: 0.55rem;"><i class="fas fa-award text-secondary"></i> SILVER</span>
+                                                                                            @elseif($tier == 'bronze')
+                                                                                                <span class="badge badge-bronze shadow-sm" style="font-size: 0.55rem;"><i class="fas fa-medal"></i> BRONZE</span>
+                                                                                            @else
+                                                                                                <span class="badge bg-secondary text-white shadow-sm" style="font-size: 0.55rem;"><i class="fas fa-user"></i> REGULER</span>
+                                                                                            @endif
+                                                                                        </div>
+                                                                                        <div class="d-flex gap-2 small text-slate-muted fw-medium" style="font-size: 0.65rem;">
+                                                                                            <span><i class="fas fa-user-tag text-emerald-custom me-1"></i>{{ $item->user->name }}</span>
+                                                                                            <span><i class="fas fa-calendar-alt text-emerald-custom me-1"></i>{{ \Carbon\Carbon::parse($item->tanggal_order)->format('d M Y') }}</span>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
                                                                             </div>
-                                                                            <div class="d-flex gap-3 small text-slate-muted" style="font-size: 0.7rem;">
-                                                                                <span><i class="fas fa-user-tag me-1"></i>Sales: {{ $item->user->name }}</span>
-                                                                                <span><i class="fas fa-calendar-alt me-1"></i>Order: {{ \Carbon\Carbon::parse($item->tanggal_order)->format('d/m/Y') }}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    {{-- METRIK PLAFON (3 KOLOM) --}}
-                                                                    <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded">
-                                                                        <div class="text-center w-100 px-2 border-end">
-                                                                            <span class="d-block small text-slate-muted mb-1" style="font-size: 0.65rem;">Plafon Maksimal</span>
-                                                                            <span class="fw-bold text-slate-dark" style="font-size: 0.8rem;">Rp {{ number_format($plafon, 0, ',', '.') }}</span>
-                                                                        </div>
-                                                                        <div class="text-center w-100 px-2 border-end">
-                                                                            <span class="d-block small text-slate-muted mb-1" style="font-size: 0.65rem;">Hutang Berjalan</span>
-                                                                            <span class="fw-bold text-warning" style="font-size: 0.8rem;">Rp {{ number_format($piutang, 0, ',', '.') }}</span>
-                                                                        </div>
-                                                                        <div class="text-center w-100 px-2">
-                                                                            <span class="d-block small text-slate-muted mb-1" style="font-size: 0.65rem;">Sisa Limit Tersedia</span>
-                                                                            <span class="fw-bold fs-6 {{ $sisa_limit < $item->total_semua ? 'text-danger' : 'text-emerald-custom' }}">
-                                                                                Rp {{ number_format($sisa_limit, 0, ',', '.') }}
-                                                                            </span>
                                                                         </div>
                                                                     </div>
 
-                                                                    {{-- WARNING JIKA ORDER MELEBIHI SISA LIMIT --}}
-                                                                    @if($sisa_limit < $item->total_semua)
-                                                                        <div class="plafon-warning-box">
-                                                                            <i class="fas fa-exclamation-triangle fa-lg"></i>
-                                                                            <span>Perhatian: Nilai order (Rp {{ number_format($item->total_semua, 0, ',', '.') }}) melebihi sisa limit kredit pelanggan. Disarankan ditolak atau bayar lunas/DP.</span>
+                                                                    <div class="col-md-7">
+                                                                        {{-- METRIK KEUANGAN --}}
+                                                                        <div class="card card-custom h-100 shadow-sm border-0 bg-white">
+                                                                            <div class="card-body p-0 d-flex h-100">
+                                                                                <div class="flex-fill p-2 border-end d-flex flex-column justify-content-center text-center">
+                                                                                    <span class="text-slate-muted fw-bold text-uppercase mb-1" style="font-size: 0.6rem;">Plafon Maksimal</span>
+                                                                                    <span class="fw-bolder text-slate-dark" style="font-size: 0.8rem;">Rp {{ number_format($plafon, 0, ',', '.') }}</span>
+                                                                                </div>
+                                                                                <div class="flex-fill p-2 border-end d-flex flex-column justify-content-center text-center bg-light">
+                                                                                    <span class="text-slate-muted fw-bold text-uppercase mb-1" style="font-size: 0.6rem;">Hutang Berjalan</span>
+                                                                                    <span class="fw-bolder text-warning" style="font-size: 0.8rem;">Rp {{ number_format($piutang, 0, ',', '.') }}</span>
+                                                                                </div>
+                                                                                <div class="flex-fill p-2 d-flex flex-column justify-content-center text-center" style="background-color: #f8fafc;">
+                                                                                    <span class="text-slate-muted fw-bold text-uppercase mb-1" style="font-size: 0.6rem;">Sisa Limit Tersedia</span>
+                                                                                    <span class="fw-bolder {{ $sisa_limit < $item->total_semua ? 'text-danger' : 'text-emerald-custom' }}" style="font-size: 0.9rem;">
+                                                                                        Rp {{ number_format($sisa_limit, 0, ',', '.') }}
+                                                                                    </span>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                    @endif
+                                                                    </div>
                                                                 </div>
 
-                                                                {{-- TABEL RINCIAN COMPACT --}}
-                                                                <div class="bg-white border rounded shadow-sm overflow-hidden mb-3">
-                                                                    <div class="bg-light p-2 border-bottom fw-bold text-slate-dark" style="font-size: 0.75rem;">
-                                                                        <i class="fas fa-box-open text-emerald-custom me-1"></i> Rincian & Opsi Harga
+                                                                {{-- WARNING JIKA ORDER MELEBIHI SISA LIMIT --}}
+                                                                @if($sisa_limit < $item->total_semua)
+                                                                    <div class="alert alert-danger shadow-sm border-0 d-flex align-items-center mb-3 py-1 px-2" style="border-radius: 8px;">
+                                                                        <i class="fas fa-exclamation-triangle fa-lg me-2 text-danger opacity-75"></i>
+                                                                        <div>
+                                                                            <h6 class="fw-bold text-danger mb-0" style="font-size: 0.75rem;">Over Limit!</h6>
+                                                                            <span class="text-danger" style="font-size: 0.65rem;">Nilai order (Rp {{ number_format($item->total_semua, 0, ',', '.') }}) melebihi sisa limit kredit pelanggan. Disarankan ditolak / DP.</span>
+                                                                        </div>
                                                                     </div>
-                                                                    <div class="table-responsive">
-                                                                        <table class="table table-compact table-hover mb-0 align-middle border-0">
-                                                                            <thead class="bg-white text-slate-muted border-bottom text-uppercase" style="font-size: 0.7rem;">
-                                                                                <tr>
-                                                                                    <th class="ps-2">Barang</th>
-                                                                                    <th class="text-center" width="80px">Qty</th>
-                                                                                    <th class="text-end" width="180px">Harga (Rp)</th>
-                                                                                    <th class="text-end pe-2" width="120px">Subtotal</th>
-                                                                                </tr>
-                                                                            </thead>
-                                                                            <tbody>
-                                                                                @foreach($item->details as $detail)
-                                                                                @php 
-                                                                                    $hargaNormal = $detail->barang->harga_jual ?? 0;
-                                                                                    $hargaBronze = $hargaNormal - ($hargaNormal * 0.02);
-                                                                                    $hargaSilver = $hargaNormal - ($hargaNormal * 0.05);
-                                                                                    $hargaGold   = $hargaNormal - ($hargaNormal * 0.10);
-                                                                                    $stok_real   = $detail->barang->stok_akhir ?? 0;
-                                                                                @endphp
-                                                                                <tr>
-                                                                                    <td class="ps-2 border-bottom-0">
-                                                                                        <div class="fw-bold text-slate-dark text-truncate" style="max-width: 200px;">{{ $detail->barang->nama_barang }}</div>
-                                                                                        <div class="text-slate-muted" style="font-size: 0.65rem;">
-                                                                                            Stok: <span class="{{ $stok_real < $detail->jumlah ? 'text-danger fw-bold' : 'text-emerald-custom' }}">{{ $stok_real }}</span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    
-                                                                                    <td class="text-center border-bottom-0">
-                                                                                        <input type="number" name="jumlah_edit[{{ $detail->id }}]" 
-                                                                                               id="input-qty-{{ $item->id }}-{{ $detail->id }}"
-                                                                                               class="form-control text-center fw-bold input-qty-edit input-qty-{{ $item->id }}" 
-                                                                                               value="{{ $detail->jumlah }}" 
-                                                                                               data-detail-id="{{ $detail->id }}" min="0" required>
-                                                                                        @if($stok_real < $detail->jumlah)
-                                                                                            <div class="text-danger mt-1" style="font-size: 0.6rem;"><i class="fas fa-exclamation-triangle"></i> Kurang</div>
-                                                                                        @endif
-                                                                                    </td>
-                                                                                    
-                                                                                    <td class="text-end border-bottom-0">
-                                                                                        <input type="number" name="harga_edit[{{ $detail->id }}]" 
-                                                                                               id="input-harga-{{ $item->id }}-{{ $detail->id }}"
-                                                                                               class="form-control text-end fw-bold input-harga-edit input-harga-{{ $item->id }} mb-1" 
-                                                                                               value="{{ $detail->harga_jual ?? $detail->harga_satuan }}" 
-                                                                                               data-detail-id="{{ $detail->id }}" min="0" required>
+                                                                @endif
+
+                                                                {{-- TABEL RINCIAN GACOR --}}
+                                                                <div class="card card-custom shadow-sm border-0 overflow-hidden mb-3">
+                                                                    <div class="card-header bg-emerald-soft text-slate-dark py-2 border-bottom">
+                                                                        <h6 class="m-0 fw-bolder" style="font-size: 0.75rem;"><i class="fas fa-boxes text-emerald-custom me-1"></i> Rincian Pesanan & Opsi Harga</h6>
+                                                                    </div>
+                                                                    <div class="card-body p-0">
+                                                                        <div class="table-responsive">
+                                                                            <table class="table table-hover mb-0 align-middle border-0">
+                                                                                <thead class="bg-light text-slate-muted text-uppercase" style="font-size: 0.65rem;">
+                                                                                    <tr>
+                                                                                        <th class="ps-3 py-2 fw-bold border-bottom">Barang</th>
+                                                                                        <th class="text-center py-2 fw-bold border-bottom" width="70px">Qty</th>
+                                                                                        <th class="text-end py-2 fw-bold border-bottom" width="100px">HPP</th>
+                                                                                        <th class="text-end py-2 fw-bold border-bottom" width="180px">Harga (Rp)</th>
+                                                                                        <th class="text-end pe-3 py-2 fw-bold border-bottom" width="110px">Subtotal</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    @foreach($item->details as $detail)
+                                                                                    @php 
+                                                                                        $hargaNormal = $detail->barang->harga_jual ?? 0;
+                                                                                        $hargaBronze = $hargaNormal - ($hargaNormal * 0.02);
+                                                                                        $hargaSilver = $hargaNormal - ($hargaNormal * 0.05);
+                                                                                        $hargaGold   = $hargaNormal - ($hargaNormal * 0.10);
+                                                                                        $stok_real   = $detail->barang->stok_akhir ?? 0;
+                                                                                    @endphp
+                                                                                    <tr class="border-bottom">
+                                                                                        <td class="ps-3 py-2">
+                                                                                            <div class="fw-bolder text-slate-dark text-truncate" style="max-width: 180px; font-size: 0.75rem;">{{ $detail->barang->nama_barang }}</div>
+                                                                                            <div class="text-slate-muted mt-1" style="font-size: 0.6rem;">
+                                                                                                <i class="fas fa-cubes me-1"></i> Stok Gudang: 
+                                                                                                <span class="badge {{ $stok_real < $detail->jumlah ? 'bg-danger' : 'bg-emerald-soft text-emerald-custom' }} px-1 py-1 rounded">{{ $stok_real }}</span>
+                                                                                            </div>
+                                                                                        </td>
                                                                                         
-                                                                                        <div class="d-flex flex-wrap justify-content-end gap-1">
-                                                                                            <span class="badge bg-secondary border-0 btn-apply-harga {{ $tier == 'reguler' ? 'border border-dark shadow-sm' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaNormal }}" title="Harga Reguler">R: {{ number_format($hargaNormal, 0, ',', '.') }}</span>
-                                                                                            <span class="badge badge-bronze border-0 btn-apply-harga {{ $tier == 'bronze' ? 'border border-dark shadow-sm' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaBronze }}" title="Harga Bronze">B: {{ number_format($hargaBronze, 0, ',', '.') }}</span>
-                                                                                            <span class="badge bg-light text-dark border btn-apply-harga {{ $tier == 'silver' ? 'border-dark shadow-sm bg-white' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaSilver }}" title="Harga Silver">S: {{ number_format($hargaSilver, 0, ',', '.') }}</span>
-                                                                                            <span class="badge bg-warning text-dark border-0 btn-apply-harga {{ $tier == 'gold' ? 'border border-dark shadow-sm' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaGold }}" title="Harga Gold">G: {{ number_format($hargaGold, 0, ',', '.') }}</span>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                    
-                                                                                    <td class="text-end pe-2 fw-bold text-slate-dark border-bottom-0 subtotal-text-{{ $item->id }}-{{ $detail->id }}">
-                                                                                        Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
-                                                                                    </td>
-                                                                                </tr>
-                                                                                @endforeach
-                                                                            </tbody>
-                                                                            <tfoot class="bg-light border-top">
-                                                                                <tr>
-                                                                                    <td colspan="3" class="text-end fw-bold px-2 py-2 text-slate-muted" style="font-size: 0.75rem;">GRAND TOTAL ORDER INI:</td>
-                                                                                    <td class="text-end pe-2 py-2 fw-extrabold text-emerald-custom fs-6" id="grand-total-{{ $item->id }}">
-                                                                                        Rp {{ number_format($item->total_semua, 0, ',', '.') }}
-                                                                                    </td>
-                                                                                </tr>
-                                                                            </tfoot>
-                                                                        </table>
+                                                                                        <td class="text-center py-2">
+                                                                                            <input type="number" name="jumlah_edit[{{ $detail->id }}]" 
+                                                                                                    id="input-qty-{{ $item->id }}-{{ $detail->id }}"
+                                                                                                    class="form-control form-control-sm text-center fw-bold input-qty-edit input-qty-{{ $item->id }} mx-auto shadow-sm p-1" 
+                                                                                                    value="{{ $detail->jumlah }}" 
+                                                                                                    data-detail-id="{{ $detail->id }}" min="0" required style="width: 55px; font-size:0.75rem;">
+                                                                                            @if($stok_real < $detail->jumlah)
+                                                                                                <div class="text-danger fw-bold mt-1" style="font-size: 0.55rem;"><i class="fas fa-exclamation-circle"></i> Defisit</div>
+                                                                                            @endif
+                                                                                        </td>
+                                                                                        
+                                                                                        <td class="text-end py-2 fw-bold text-danger text-nowrap" style="font-size: 0.75rem;">
+                                                                                            Rp {{ number_format($detail->hpp > 0 ? $detail->hpp : ($detail->barang->harga_beli ?? 0), 0, ',', '.') }}
+                                                                                        </td>
+                                                                                        
+                                                                                        <td class="text-end py-2">
+                                                                                            <input type="number" name="harga_edit[{{ $detail->id }}]" 
+                                                                                                    id="input-harga-{{ $item->id }}-{{ $detail->id }}"
+                                                                                                    class="form-control form-control-sm text-end fw-bold input-harga-edit input-harga-{{ $item->id }} mb-1 shadow-sm ms-auto p-1" 
+                                                                                                    value="{{ $detail->harga_jual ?? $detail->harga_satuan }}" 
+                                                                                                    data-detail-id="{{ $detail->id }}" 
+                                                                                                    data-hpp="{{ $detail->hpp > 0 ? $detail->hpp : ($detail->barang->harga_beli ?? 0) }}"
+                                                                                                    min="0" required style="max-width: 120px; font-size:0.75rem;">
+                                                                                            
+                                                                                            <div class="d-flex flex-wrap justify-content-end gap-1" style="font-size:0.65rem;">
+                                                                                                <span class="badge bg-secondary border-0 btn-apply-harga p-1 {{ $tier == 'reguler' ? 'border border-dark shadow' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaNormal }}" title="Reguler : Tidak ada potongan"><i class="fas fa-tag"></i> R</span>
+                                                                                                <span class="badge badge-bronze border-0 btn-apply-harga p-1 {{ $tier == 'bronze' ? 'border border-dark shadow' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaBronze }}" title="Bronze : Potongan 2%"><i class="fas fa-medal"></i> B</span>
+                                                                                                <span class="badge bg-light text-dark border btn-apply-harga p-1 {{ $tier == 'silver' ? 'border-dark shadow bg-white' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaSilver }}" title="Silver : Potongan 5%"><i class="fas fa-award"></i> S</span>
+                                                                                                <span class="badge bg-warning text-dark border-0 btn-apply-harga p-1 {{ $tier == 'gold' ? 'border border-dark shadow' : '' }}" data-target="input-harga-{{ $item->id }}-{{ $detail->id }}" data-harga="{{ $hargaGold }}" title="Gold : Potongan 10%"><i class="fas fa-crown"></i> G</span>
+                                                                                            </div>
+                                                                                        </td>
+                                                                                        
+                                                                                        <td class="text-end pe-3 py-2 fw-bolder text-emerald-custom subtotal-text-{{ $item->id }}-{{ $detail->id }}" style="font-size: 0.8rem;">
+                                                                                            Rp {{ number_format($detail->subtotal, 0, ',', '.') }}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                    @endforeach
+                                                                                </tbody>
+                                                                                <tfoot class="bg-light">
+                                                                                    <tr>
+                                                                                        <td colspan="4" class="text-end fw-bold px-3 py-2 text-slate-muted text-uppercase" style="font-size: 0.7rem;">Grand Total Order:</td>
+                                                                                        <td class="text-end pe-3 py-2 fw-bolder text-slate-dark" id="grand-total-{{ $item->id }}" style="font-size: 0.9rem;">
+                                                                                            Rp {{ number_format($item->total_semua, 0, ',', '.') }}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                    <tr>
+                                                                                        <td colspan="4" class="text-end fw-bold px-3 py-1 text-slate-muted text-uppercase border-top-0" style="font-size: 0.65rem;"><i class="fas fa-chart-line text-info me-1"></i>Laba Kotor:</td>
+                                                                                        <td class="text-end pe-3 py-1 fw-bolder text-info border-top-0" id="laba-kotor-{{ $item->id }}" style="font-size: 0.8rem;">
+                                                                                            @php 
+                                                                                                $totalHPP = 0;
+                                                                                                foreach($item->details as $d) {
+                                                                                                    $hppItem = $d->hpp > 0 ? $d->hpp : ($d->barang->harga_beli ?? 0);
+                                                                                                    $totalHPP += ($hppItem * $d->jumlah);
+                                                                                                }
+                                                                                                $laba = $item->total_semua - $totalHPP;
+                                                                                            @endphp
+                                                                                            Rp {{ number_format($laba, 0, ',', '.') }}
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                </tfoot>
+                                                                            </table>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
-                                                                {{-- CATATAN EKSEKUTIF COMPACT --}}
-                                                                <div>
-                                                                    <label class="form-label fw-bold text-slate-dark mb-1" style="font-size: 0.75rem;"><i class="fas fa-pen-alt text-emerald-custom me-1"></i> Catatan Persetujuan (Opsional)</label>
-                                                                    <textarea name="catatan" class="form-control bg-white shadow-sm border" rows="1" placeholder="Instruksi ACC / Penolakan..." style="font-size: 0.8rem;"></textarea>
+                                                                {{-- CATATAN EKSEKUTIF --}}
+                                                                <div class="mb-1">
+                                                                    <label class="form-label fw-bold text-slate-dark mb-1" style="font-size: 0.7rem;"><i class="fas fa-pen-nib text-emerald-custom me-1"></i> Catatan Persetujuan (Opsional)</label>
+                                                                    <textarea name="catatan" class="form-control form-control-sm bg-white shadow-sm" rows="1" placeholder="Masukkan pesan khusus..." style="font-size: 0.75rem; border-radius: 8px; border-color: #cbd5e1;"></textarea>
                                                                 </div>
 
                                                             </div>
 
                                                             {{-- FOOTER MODAL --}}
-                                                            <div class="modal-footer bg-white border-top py-2 d-flex justify-content-between">
-                                                                <div class="small text-slate-muted ms-2" style="font-size: 0.7rem;"><i class="fas fa-info-circle me-1"></i> Sisa Limit otomatis dihitung dari total hutang berjalan.</div>
-                                                                <div>
-                                                                    <button type="submit" name="status" value="ditolak" class="btn btn-sm btn-outline-danger fw-bold px-3 rounded-pill shadow-sm me-1">Tolak</button>
-                                                                    <button type="submit" name="status" value="disetujui" class="btn btn-sm btn-emerald-custom fw-bold px-3 rounded-pill shadow-sm"><i class="fas fa-check me-1"></i> Setujui</button>
+                                                            <div class="modal-footer bg-white py-2 px-3 d-flex justify-content-between border-top">
+                                                                <div class="small text-slate-muted fw-medium" style="font-size: 0.65rem;"><i class="fas fa-shield-alt text-emerald-custom me-1"></i> Tercatat di Audit Trail.</div>
+                                                                <div class="d-flex gap-2">
+                                                                    <button type="submit" name="status" value="ditolak" class="btn btn-sm btn-outline-danger fw-bolder px-3 rounded-pill shadow-sm">Tolak</button>
+                                                                    <button type="submit" name="status" value="disetujui" class="btn btn-sm btn-emerald-custom fw-bolder px-3 rounded-pill shadow-sm"><i class="fas fa-check-circle me-1"></i> Setujui</button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -337,6 +371,7 @@
                         </table>
                     </div>
                 </div>
+                </div>
             </div>
         </div>
     </div>
@@ -348,23 +383,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // FUNGSI UMUM UNTUK MENGHITUNG ULANG SUBTOTAL & GRAND TOTAL DI DALAM SATU MODAL
     function hitungUlangModal(modalId) {
         let grandTotal = 0;
+        let totalHpp = 0;
         const semuaHarga = document.querySelectorAll(`.input-harga-${modalId}`);
         
         semuaHarga.forEach(function(inputHarga) {
             const detailId = inputHarga.dataset.detailId;
+            const hpp = parseFloat(inputHarga.dataset.hpp) || 0;
             const inputQty = document.getElementById(`input-qty-${modalId}-${detailId}`);
             const qty = parseFloat(inputQty.value) || 0;
             const harga = parseFloat(inputHarga.value) || 0;
+            
             const subtotal = qty * harga;
+            const subtotalHpp = qty * hpp;
             
             const subtotalEl = document.querySelector(`.subtotal-text-${modalId}-${detailId}`);
             if(subtotalEl) { subtotalEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID'); }
             
             grandTotal += subtotal;
+            totalHpp += subtotalHpp;
         });
         
         const grandTotalEl = document.getElementById(`grand-total-${modalId}`);
         if(grandTotalEl) { grandTotalEl.innerText = 'Rp ' + grandTotal.toLocaleString('id-ID'); }
+
+        const labaKotorEl = document.getElementById(`laba-kotor-${modalId}`);
+        if(labaKotorEl) {
+            const laba = grandTotal - totalHpp;
+            labaKotorEl.innerText = 'Rp ' + laba.toLocaleString('id-ID');
+            
+            if(laba < 0) {
+                labaKotorEl.classList.remove('text-info');
+                labaKotorEl.classList.add('text-danger');
+            } else {
+                labaKotorEl.classList.remove('text-danger');
+                labaKotorEl.classList.add('text-info');
+            }
+        }
     }
 
     const inputHargas = document.querySelectorAll('input[class*="input-harga-edit"]');

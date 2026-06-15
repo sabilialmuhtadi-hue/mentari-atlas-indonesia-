@@ -4,74 +4,313 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surat Jalan - {{ $penjualan->no_so }}</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Courier New', Courier, monospace; font-size: 14px; color: #000; }
-        .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .info-table { width: 100%; margin-bottom: 20px; }
-        .info-table td { vertical-align: top; padding: 3px 0; }
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .items-table th, .items-table td { border: 1px solid #000; padding: 10px 8px; text-align: left; }
-        .items-table th { background-color: #f2f2f2; text-align: center; }
-        .text-center { text-align: center !important; }
-        .signature { width: 100%; margin-top: 50px; }
-        .signature td { text-align: center; width: 33%; }
-        .signature-line { margin-top: 70px; border-top: 1px solid #000; display: inline-block; width: 160px; }
+        :root {
+            --primary: #334155; /* Slate 700 for Delivery Note */
+            --primary-light: #f1f5f9;
+            --slate-900: #0f172a;
+            --slate-700: #334155;
+            --slate-500: #64748b;
+            --slate-200: #e2e8f0;
+            --slate-50: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            font-size: 13px; 
+            color: var(--slate-900); 
+            line-height: 1.5;
+            background: #e2e8f0;
+            margin: 0;
+            padding: 40px 0;
+        }
         
-        /* Pewarnaan Khusus Notifikasi Tahap Pengiriman */
-        .bo-note { font-size: 11px; font-style: italic; margin-top: 4px; display: block; color: #b45309; }
-        .bo-success { font-size: 11px; font-style: italic; margin-top: 4px; display: block; color: #10b981; font-weight: bold; }
+        .container { 
+            width: 100%; 
+            max-width: 850px; 
+            margin: 0 auto; 
+            background: #fff;
+            padding: 50px 60px;
+            box-sizing: border-box;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Top Accent Bar */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--slate-900), var(--slate-500));
+        }
+
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            margin-bottom: 40px; 
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--slate-50);
+        }
+
+        .company-details h1 { 
+            margin: 0 0 5px 0; 
+            font-size: 26px; 
+            color: var(--slate-900); 
+            font-weight: 800; 
+            letter-spacing: -0.5px; 
+        }
+        
+        .company-details p {
+            margin: 0;
+            color: var(--slate-500);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .invoice-details {
+            text-align: right;
+        }
+
+        .invoice-details h2 { 
+            margin: 0 0 5px 0; 
+            font-size: 32px; 
+            color: var(--slate-900);
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+        }
+        
+        .invoice-number {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--slate-500);
+            background: var(--slate-50);
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .info-grid { 
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .info-box {
+            background: var(--slate-50);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--slate-200);
+        }
+
+        .info-box h3 {
+            margin: 0 0 15px 0;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--slate-500);
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table td { padding: 4px 0; vertical-align: top; }
+        .info-label { width: 40%; color: var(--slate-500); font-weight: 500; }
+        .info-value { width: 60%; color: var(--slate-900); font-weight: 600; }
+
+        .items-table { 
+            width: 100%; 
+            border-collapse: separate; 
+            border-spacing: 0;
+            margin-bottom: 40px; 
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--slate-200);
+        }
+        
+        .items-table th, .items-table td { 
+            padding: 14px 16px; 
+            text-align: left; 
+            border-bottom: 1px solid var(--slate-200);
+        }
+        
+        .items-table th { 
+            background-color: var(--slate-50); 
+            color: var(--slate-500);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            border-bottom: 2px solid var(--slate-200);
+        }
+        
+        .items-table tr:last-child td { border-bottom: none; }
+        .items-table tbody tr:nth-child(even) { background-color: #fdfdfd; }
+
+        .text-center { text-align: center !important; }
+
+        .notes-section {
+            background: var(--slate-50);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--slate-900);
+            margin-bottom: 40px;
+        }
+
+        .notes-section p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--slate-700);
+            line-height: 1.6;
+        }
+
+        .signature { 
+            width: 100%; 
+            margin-top: 50px; 
+        }
+        .signature td { 
+            text-align: center; 
+            width: 33.33%; 
+            color: var(--slate-700);
+        }
+        .signature-line { 
+            margin-top: 80px; 
+            border-top: 1px solid var(--slate-900); 
+            display: inline-block; 
+            width: 160px; 
+            margin-bottom: 5px;
+        }
+        
+        .bo-note { font-size: 11px; color: #d97706; font-style: italic; display: block; margin-top: 6px; background: #fef3c7; padding: 4px 8px; border-radius: 4px; }
+        .bo-success { font-size: 11px; color: #10b981; font-style: italic; display: block; margin-top: 6px; background: #d1fae5; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
         
         /* CSS UNTUK FITUR EDITABLE */
-        .editable { transition: background-color 0.2s; border-bottom: 1px dashed transparent; }
+        .editable { transition: all 0.2s; border-bottom: 1px dashed transparent; border-radius: 3px; padding: 2px 4px; margin: -2px -4px;}
         .editable:hover { background-color: #fef08a; cursor: text; border-bottom: 1px dashed #ca8a04; }
-        .editable:focus { outline: none; background-color: #fef9c3; border-bottom: 1px solid #ca8a04; }
+        .editable:focus { outline: none; background-color: #fef9c3; border-bottom: 1px solid #ca8a04; box-shadow: 0 0 0 2px rgba(202, 138, 4, 0.2); }
         
         @media print {
-            .no-print { display: none; }
-            .editable:hover, .editable:focus { background-color: transparent; border-bottom: none; }
+            body { background: #fff; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            .no-print { display: none !important; }
+            .editable:hover, .editable:focus { background-color: transparent; border-bottom: none; box-shadow: none; padding: 0; margin: 0; }
+            .container::before { height: 6px; }
         }
+
+        .controls-bar {
+            text-align: right; 
+            margin-bottom: 30px; 
+            background: #fff; 
+            padding: 15px 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-print {
+            padding: 10px 24px; 
+            background: var(--slate-900); 
+            color: #fff; 
+            cursor: pointer; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-print:hover { background: #000; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        
+        .btn-back {
+            padding: 10px 24px; 
+            background: var(--slate-200); 
+            color: var(--slate-700); 
+            text-decoration: none; 
+            margin-left: 12px; 
+            border-radius: 6px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-back:hover { background: #cbd5e1; color: var(--slate-900); }
     </style>
 </head>
 <body>
+    <div style="max-width: 850px; margin: 0 auto;" class="no-print">
+        <div class="controls-bar">
+            <div style="display: flex; align-items: center; color: #b45309; font-size: 13px; font-weight: 500;">
+                <span style="font-size: 18px; margin-right: 8px;">💡</span>
+                Teks berlatar kuning dapat Anda sesuaikan sebelum dicetak.
+            </div>
+            <div>
+                <a href="{{ route('penjualan.index') }}" class="btn-back">Kembali</a>
+                <button onclick="window.print()" class="btn-print">Cetak Surat Jalan</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
-        <div class="no-print text-right" style="text-align: right; margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 5px; border: 1px solid #fde68a;">
-            <p style="margin: 0 0 10px 0; color: #b45309; font-size: 12px; font-family: sans-serif;">💡 <strong>Tips:</strong> Klik pada teks alamat, nama pengirim/supir, atau plat nomor untuk mengubahnya secara langsung sebelum dicetak.</p>
-            <button onclick="window.print()" style="padding: 10px 20px; background: #000; color: #fff; cursor: pointer; border: none; border-radius: 4px;">Cetak Sekarang</button>
-            <a href="{{ route('penjualan.index') }}" style="padding: 10px 20px; background: #ccc; color: #000; text-decoration: none; margin-left: 10px; border-radius: 4px;">Kembali</a>
-        </div>
-
         <div class="header">
-            <h2 style="margin: 0; letter-spacing: 2px;">SURAT JALAN</h2>
-            <p style="margin: 5px 0 0 0;">Harap periksa kelengkapan barang sebelum ditandatangani</p>
+            <div class="company-details">
+                <h1>PT. MENTARI ATLAS INDONESIA</h1>
+                <p>
+                    <strong>Head Office:</strong> Jl. Jenderal Sudirman No. 123, Pontianak, Kalimantan Barat<br>
+                    <strong>Phone:</strong> (0561) 123456 &nbsp;|&nbsp; <strong>Email:</strong> info@mentariprimasemesta.com
+                </p>
+            </div>
+            <div class="invoice-details">
+                <h2>SURAT JALAN</h2>
+                <div class="invoice-number">SJ-{{ str_replace('SO-', '', $penjualan->no_so) }}</div>
+            </div>
         </div>
 
-        <table class="info-table">
-            <tr>
-                <td width="18%"><strong>No. Surat Jalan</strong></td>
-                <td width="32%">: SJ-{{ str_replace('SO-', '', $penjualan->no_so) }}</td>
-                <td width="15%"><strong>Kepada Yth.</strong></td>
-                <td width="35%">: <strong>{{ $penjualan->customer->nama_customer }}</strong></td>
-            </tr>
-            <tr>
-                <td><strong>Tanggal Kirim</strong></td>
-                <td>: <span class="editable" contenteditable="true">{{ date('d-M-Y') }}</span></td>
-                <td><strong>Alamat</strong></td>
-                <td>: <span class="editable" contenteditable="true">{{ $penjualan->customer->alamat ?? 'Tulis alamat tujuan di sini...' }}</span></td>
-            </tr>
-            <tr>
-                <td><strong>No. Referensi (SO)</strong></td>
-                <td>: {{ $penjualan->no_so }}</td>
-                <td><strong>No. Telepon</strong></td>
-                <td>: <span class="editable" contenteditable="true">{{ $penjualan->customer->no_telepon ?? '-' }}</span></td>
-            </tr>
-            <tr>
-                <td><strong>Plat Kendaraan</strong></td>
-                <td>: <span class="editable" contenteditable="true">[Ketik Plat No / Ekspedisi]</span></td>
-                <td><strong>Catatan</strong></td>
-                <td>: <span class="editable" contenteditable="true">-</span></td>
-            </tr>
-        </table>
+        <div class="info-grid">
+            <div class="info-box">
+                <h3>Informasi Penerima</h3>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label">Kepada Yth.</td>
+                        <td class="info-value">{{ $penjualan->customer->nama_customer }}</td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Alamat Kirim</td>
+                        <td class="info-value"><span class="editable" contenteditable="true">{{ $penjualan->customer->alamat ?? 'Isi alamat pengiriman...' }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Telepon</td>
+                        <td class="info-value"><span class="editable" contenteditable="true">{{ $penjualan->customer->no_telepon ?? '-' }}</span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="info-box">
+                <h3>Detail Pengiriman</h3>
+                <table class="info-table">
+                    <tr>
+                        <td class="info-label">Tanggal Kirim</td>
+                        <td class="info-value"><span class="editable" contenteditable="true">{{ date('d M Y') }}</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Plat Kendaraan</td>
+                        <td class="info-value"><span class="editable" contenteditable="true">[Ketik Plat / Ekspedisi]</span></td>
+                    </tr>
+                    <tr>
+                        <td class="info-label">Referensi SO</td>
+                        <td class="info-value">{{ $penjualan->no_so }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
 
         @php
             $backorders = \App\Models\BackOrder::where('penjualan_id', $penjualan->id)->get()->keyBy('barang_id');
@@ -80,10 +319,10 @@
         <table class="items-table">
             <thead>
                 <tr>
-                    <th width="5%">No</th>
-                    <th width="55%" style="text-align: left;">Nama Barang / Deskripsi</th>
-                    <th width="20%" class="text-center">Dipesan Awal</th>
-                    <th width="20%" class="text-center">Dikirim Saat Ini</th>
+                    <th width="5%" class="text-center">No</th>
+                    <th width="55%">Deskripsi Barang</th>
+                    <th width="20%" class="text-center">Kuantitas Pesanan</th>
+                    <th width="20%" class="text-center">Kuantitas Kirim</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,49 +330,77 @@
                 @php
                     $bo = $backorders->get($detail->barang_id);
                     $qtyPesan = $detail->jumlah;
+                    $qtyKirim = $qtyPesan;
+                    $statusTeks = 'normal';
                     
-                    // LOGIKA CERDAS PENGIRIMAN PARSIAL VS PELUNASAN
-                    if ($bo) {
-                        if (strtolower($bo->status_bo) === 'terpenuhi' || strtolower($bo->status_bo) === 'selesai') {
-                            // TAHAP 2: Jika BO sudah lunas, yang dikirim di mobil HANYA barang sisa BO
+                    if($bo) {
+                        $qtyKirim = $qtyPesan - $bo->jumlah_kurang; // Yang dikirim saat ini jika baru partial awal
+                        // Kalau BO sudah lunas, berarti kiriman kedua adalah sejumlah kekurangannya
+                        if(strtolower($bo->status_bo) === 'terpenuhi' || strtolower($bo->status_bo) === 'selesai') {
                             $qtyKirim = $bo->jumlah_kurang;
-                            $statusTeks = 'pelunasan';
+                            $statusTeks = 'lunas';
                         } else {
-                            // TAHAP 1: Jika BO masih menggantung, yang dikirim HANYA partisi awal
-                            $qtyKirim = $qtyPesan - $bo->jumlah_kurang;
-                            $statusTeks = 'parsial';
+                            $statusTeks = 'hutang';
                         }
-                    } else {
-                        // NORMAL: Stok dari awal memang cukup
-                        $qtyKirim = $qtyPesan;
-                        $statusTeks = 'normal';
                     }
                 @endphp
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>
-                        <strong>{{ $detail->barang->nama_barang }}</strong>
+                        <strong style="color: var(--slate-900);">{{ $detail->barang->nama_barang }}</strong>
                         
-                        @if($statusTeks === 'parsial')
-                            <span class="bo-note editable" contenteditable="true">*Catatan: Pengiriman Parsial Tahap 1. Sisa {{ $bo->jumlah_kurang }} unit menyusul via Back Order.</span>
-                        @elseif($statusTeks === 'pelunasan')
-                            <span class="bo-success editable" contenteditable="true">*Catatan: Pengiriman Tahap 2 (Pelunasan Kuantitas Back Order sejumlah {{ $bo->jumlah_kurang }} unit).</span>
+                        @if($statusTeks === 'hutang')
+                            <span class="bo-note editable" contenteditable="true">
+                                <strong>Catatan:</strong> Pengiriman Parsial I (Sisa belum terkirim: {{ $bo->jumlah_kurang }})
+                            </span>
+                        @elseif($statusTeks === 'lunas')
+                            <span class="bo-success editable" contenteditable="true">
+                                ✔ Pengiriman Susulan Back Order (Lengkap)
+                            </span>
                         @endif
                     </td>
-                    <td class="text-center">{{ $qtyPesan }} Pcs</td>
-                    <td class="text-center" style="font-size: 16px;">
-                        <strong>{{ $qtyKirim > 0 ? $qtyKirim . ' Pcs' : '-' }}</strong>
-                    </td>
+                    <td class="text-center">{{ $qtyPesan }}</td>
+                    <td class="text-center"><strong><span class="editable" contenteditable="true">{{ $qtyKirim }}</span></strong></td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
 
+        <div class="notes-section">
+            <p class="editable" contenteditable="true">
+                <strong>CATATAN PENGIRIMAN:</strong><br>
+                1. Mohon periksa kondisi dan kelengkapan barang sebelum menandatangani Surat Jalan ini.<br>
+                2. Klaim kerusakan atau kekurangan barang tidak dilayani setelah surat jalan ditandatangani oleh penerima.<br>
+                3. Surat Jalan ini merupakan dokumen sah sebagai bukti serah terima barang.
+            </p>
+        </div>
+
         <table class="signature">
             <tr>
-                <td>Penerima,<br>(Customer)<br><br><br><div class="signature-line"></div></td>
-                <td>Pengirim,<br><span class="editable" contenteditable="true" title="Ubah Nama Supir">(Nama Supir)</span><br><br><br><div class="signature-line"></div></td>
-                <td>Disiapkan Oleh,<br><span class="editable" contenteditable="true" title="Ubah Nama Admin Gudang">({{ Auth::user()->name }})</span><br><br><br><div class="signature-line"></div></td>
+                <td>
+                    Dibuat Oleh,<br>
+                    <strong>Admin Gudang</strong><br>
+                    <br>
+                    <br>
+                    <div class="signature-line"></div><br>
+                    <span class="editable" contenteditable="true"><strong>( Nama Jelas )</strong></span>
+                </td>
+                <td>
+                    Pengirim / Supir,<br>
+                    <strong>Ekspedisi</strong><br>
+                    <br>
+                    <br>
+                    <div class="signature-line"></div><br>
+                    <span class="editable" contenteditable="true"><strong>( Nama Jelas )</strong></span>
+                </td>
+                <td>
+                    Penerima,<br>
+                    <strong>{{ $penjualan->customer->nama_customer }}</strong><br>
+                    <br>
+                    <br>
+                    <div class="signature-line"></div><br>
+                    <span class="editable" contenteditable="true"><strong>( Tanda Tangan & Cap )</strong></span>
+                </td>
             </tr>
         </table>
     </div>

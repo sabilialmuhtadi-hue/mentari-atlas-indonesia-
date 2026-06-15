@@ -95,6 +95,10 @@
                         <small class="text-slate-muted fw-bold text-uppercase" style="letter-spacing: 0.5px;">Supplier / Vendor</small>
                         <div class="fs-5 text-slate-dark fw-bold">{{ $utang->pembelian->nama_supplier ?? '-' }}</div>
                     </div>
+                    <div class="mb-4">
+                        <small class="text-slate-muted fw-bold text-uppercase" style="letter-spacing: 0.5px;"><i class="far fa-calendar-alt me-1 text-danger"></i>Tanggal Jatuh Tempo</small>
+                        <div class="fs-6 text-danger fw-bold">{{ \Carbon\Carbon::parse($utang->tanggal_jatuh_tempo)->format('d F Y') }}</div>
+                    </div>
                     
                     <hr class="border-secondary-subtle my-4">
 
@@ -184,14 +188,20 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold text-slate-dark small">Pilih Metode Pembayaran *</label>
-                                    <select name="metode_pembayaran" class="form-select form-control-custom form-select-lg bg-light" style="font-size: 1rem;" required>
+                                    <select name="metode_pembayaran" id="metode_pembayaran" class="form-select form-control-custom form-select-lg bg-light" style="font-size: 1rem;" onchange="toggleMetodeLainnya()" required>
                                         <option value="" selected disabled>-- Pilih Bank / Tunai --</option>
                                         <option value="Transfer BCA">💳 Transfer BCA</option>
                                         <option value="Transfer Mandiri">💳 Transfer Mandiri</option>
                                         <option value="Transfer BRI">💳 Transfer BRI</option>
                                         <option value="Tunai / Cash">💵 Tunai / Cash</option>
                                         <option value="Giro / Cek">📄 Giro / Cek</option>
+                                        <option value="Lainnya">✏️ Lainnya (Isi Manual)</option>
                                     </select>
+                                    
+                                    {{-- Input Muncul Dinamis Jika Pilih Lainnya --}}
+                                    <div class="mt-2" id="div_metode_lainnya" style="display: none;">
+                                        <input type="text" name="metode_pembayaran_lainnya" id="metode_pembayaran_lainnya" class="form-control border-secondary-subtle shadow-sm" placeholder="Contoh: Transfer BNI, Dana, dll.">
+                                    </div>
                                 </div>
                             </div>
 
@@ -260,6 +270,8 @@
                                     <a href="{{ asset('storage/' . $bayar->bukti_bayar) }}" target="_blank" class="btn btn-sm btn-light border shadow-sm rounded-pill text-slate-dark" style="font-size: 0.75rem;">
                                         <i class="fas fa-image text-info me-1"></i> Lihat Struk
                                     </a>
+                                @else
+                                    <span class="text-muted fst-italic" style="font-size: 0.7rem;"><i class="fas fa-exclamation-triangle text-warning me-1"></i> Tanpa Bukti Lampiran</span>
                                 @endif
                             </td>
                         </tr>
@@ -352,4 +364,23 @@
         </div>
     </div>
 </div>
+
+{{-- SCRIPT UNTUK MEMUNCULKAN INPUT METODE LAINNYA --}}
+<script>
+    function toggleMetodeLainnya() {
+        var dropdown = document.getElementById('metode_pembayaran');
+        var divLainnya = document.getElementById('div_metode_lainnya');
+        var inputLainnya = document.getElementById('metode_pembayaran_lainnya');
+
+        if (dropdown.value === 'Lainnya') {
+            divLainnya.style.display = 'block';
+            inputLainnya.setAttribute('required', 'required');
+            inputLainnya.focus();
+        } else {
+            divLainnya.style.display = 'none';
+            inputLainnya.removeAttribute('required');
+            inputLainnya.value = ''; // Kosongkan isi jika user mengganti opsi
+        }
+    }
+</script>
 @endsection

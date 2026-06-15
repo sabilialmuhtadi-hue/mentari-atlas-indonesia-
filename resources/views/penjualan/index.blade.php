@@ -61,8 +61,8 @@
 
     {{-- TABEL PREMIUM MENTARI ATLAS --}}
     <div class="table-wrapper-mentari">
-        <div class="table-responsive">
-            <table class="table table-mentari table-mentari-compact align-middle" style="font-size: 0.8rem;">
+        <div class="table-responsive" style="overflow: visible;">
+            <table class="table table-mentari table-mentari-compact align-middle mb-0" style="font-size: 0.85rem;">
                 <thead>
                     <tr>
                         <th class="ps-3 text-nowrap" style="width: 10%;">No. SO</th>
@@ -139,6 +139,8 @@
                                 <span class="badge bg-secondary px-2 py-1 shadow-sm"><i class="fas fa-box"></i> Packing</span>
                             @elseif($so->status == 'ready_to_invoice')
                                 <span class="badge bg-primary px-2 py-1 shadow-sm"><i class="fas fa-truck"></i> Kirim</span>
+                            @elseif($so->status == 'menunggu_restock')
+                                <span class="badge bg-danger px-2 py-1 shadow-sm"><i class="fas fa-clock"></i> Back Order</span>
                             @else
                                 <span class="badge bg-info px-2 py-1 shadow-sm">{{ ucfirst($so->status) }}</span>
                             @endif
@@ -171,27 +173,46 @@
 
                                 @endif
 
-                                {{-- FITUR KONFIRMASI PACKING: Hilang untuk Sales --}}
-                                @if($so->status_approval == 'disetujui' && $so->status == 'draft' && strtolower(Auth::user()->role) != 'sales')
-                                    <form action="{{ route('penjualan.packingSelesai', $so->id) }}" method="POST" class="m-0" onsubmit="return confirm('Konfirmasi: Potong stok sekarang?')">
-                                        @csrf
-                                        <button type="submit" class="btn btn-action-square" title="Konfirmasi Packing Selesai">
-                                            <i class="fas fa-box-open text-emerald-custom"></i>
-                                        </button>
-                                    </form>
+                                {{-- FITUR KONFIRMASI PACKING: Disembunyikan untuk role sales --}}
+                                @if(strtolower(Auth::user()->role) != 'sales' && $so->status_approval == 'disetujui' && in_array($so->status, ['draft', 'menunggu_restock']))
+                                    @php
+                                        $totalShippable = 0;
+                                        foreach($so->details as $detail) {
+                                            $stok = $detail->barang->stok_akhir ?? 0;
+                                            $totalShippable += max(0, min($detail->jumlah, $stok));
+                                        }
+                                    @endphp
+
+                                    @if($totalShippable > 0)
+                                        <form action="{{ route('penjualan.packingSelesai', $so->id) }}" method="POST" class="m-0" onsubmit="return confirm('Stok tersedia untuk dipacking. Konfirmasi: Potong stok sekarang?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-action-square" title="Konfirmasi Packing Selesai">
+                                                <i class="fas fa-box-open text-emerald-custom"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        @if($so->status == 'draft')
+                                            <form action="{{ route('penjualan.sendToBackorder', $so->id) }}" method="POST" class="m-0" onsubmit="return confirm('Stok kosong (0). Pindahkan ke antrean Back Order agar Purchasing bisa restock?')">
+                                                @csrf
+                                                <button type="submit" class="btn btn-action-square border-danger" title="Stok Kosong! Masukkan ke Back Order">
+                                                    <i class="fas fa-box-open text-danger"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            <span class="badge bg-warning text-dark"><i class="fas fa-clock"></i> BO</span>
+                                        @endif
+                                    @endif
                                 @endif
 
                                 {{-- Tombol Cetak / Printer: Hilang untuk Sales --}}
                                 @if($so->status == 'ready_to_invoice' && strtolower(Auth::user()->role) != 'sales')
-                                    <div class="dropdown m-0">
-                                        <button class="btn dropdown-toggle btn-action-square" type="button" data-bs-toggle="dropdown" title="Cetak Dokumen">
-                                            <i class="fas fa-print text-emerald-custom"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end shadow border-0">
-                                            <li class="dropdown-header small text-uppercase fw-bold text-muted">Dokumen</li>
-                                            <li><a class="dropdown-item py-2" href="{{ route('penjualan.printSuratJalan', $so->id) }}" target="_blank"><i class="fas fa-truck me-2 text-muted"></i> Surat Jalan</a></li>
-                                            <li><a class="dropdown-item py-2" href="{{ route('penjualan.printFaktur', $so->id) }}" target="_blank"><i class="fas fa-file-invoice-dollar me-2 text-muted"></i> Faktur</a></li>
-                                        </ul>
+                                    <div class="d-flex gap-1 justify-content-center m-0">
+                                        <a href="{{ route('penjualan.printSuratJalan', $so->id) }}" target="_blank" class="btn btn-action-square" title="Cetak Surat Jalan">
+                                            <i class="fas fa-truck text-emerald-custom"></i>
+                                        </a>
+                                        <a href="{{ route('penjualan.printFaktur', $so->id) }}" target="_blank" class="btn btn-action-square" title="Cetak Faktur">
+                                            <i class="fas fa-file-invoice-dollar text-emerald-custom"></i>
+                                        </a>
                                     </div>
                                 @endif
 

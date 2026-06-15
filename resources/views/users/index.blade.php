@@ -2,17 +2,20 @@
 
 @section('content')
 @php
-    // Daftar menu untuk hak akses (Update: Tambah Unduh Laporan)
+    // Daftar menu untuk hak akses (Sesuai dengan request terbaru)
     $daftarMenu = [
-        'data_barang' => 'Data Barang',
         'riwayat_so' => 'Riwayat SO',
-        'backorder' => 'Backorder',
+        'data_barang' => 'Data Barang',
+        'backorder' => 'Back Order',
         'pembelian_stok' => 'Pembelian Stok',
-        'keuangan' => 'Keuangan (Piutang & Utang)',
-        'return_barang' => 'Return Barang',
-        'tingkat_cust' => 'Tingkat Cust',
-        'akun_staf' => 'Akun Staf',
+        'return_barang' => 'Return Barang (Penjualan & Pembelian)',
+        'akses_keuangan' => 'Keuangan (Piutang & Utang)',
+        'tingkat_cust' => 'Data Customer',
+        'data_supplier' => 'Data Supplier',
+        'profit_laba' => 'Profit / Laba',
         'unduh_laporan' => 'Unduh Laporan',
+        'audit_trail' => 'Audit Trail',
+        'akun_staf' => 'Akun Staf',
     ];
 @endphp
 
@@ -158,16 +161,16 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label small fw-bold text-slate-dark">Tentukan Role</label>
-                                                <select name="role" class="form-select bg-light fw-bold text-slate-dark" required>
-                                                    <option value="direktur" {{ $user->role == 'direktur' ? 'selected' : '' }}>Direktur (Super Admin)</option>
-                                                    <option value="sales" {{ $user->role == 'sales' ? 'selected' : '' }}>Staf Sales</option>
-                                                    <option value="admin_warehouse" {{ $user->role == 'admin_warehouse' ? 'selected' : '' }}>Admin Warehouse (Gudang)</option>
-                                                    <option value="admin_keuangan" {{ $user->role == 'admin_keuangan' ? 'selected' : '' }}>Admin Keuangan (Finansial)</option>
+                                                <select name="role" class="form-select bg-light fw-bold text-slate-dark" required onchange="toggleHakAksesEdit(this, {{ $user->id }})">
+                                                    <option value="direktur" {{ $user->role == 'direktur' ? 'selected' : '' }}>Direktur Utama</option>
+                                                    <option value="admin_keuangan" {{ in_array($user->role, ['admin_keuangan', 'keuangan']) ? 'selected' : '' }}>Admin Keuangan / Penagihan</option>
+                                                    <option value="admin_warehouse" {{ in_array($user->role, ['admin_warehouse', 'warehouse']) ? 'selected' : '' }}>Admin Gudang / Logistik</option>
+                                                    <option value="sales" {{ $user->role == 'sales' ? 'selected' : '' }}>Staf Sales / Marketing</option>
                                                 </select>
                                             </div>
 
                                             {{-- CHECKBOX HAK AKSES MENU EDIT --}}
-                                            <div class="mb-3 mt-4 pt-3 border-top">
+                                            <div class="mb-3 mt-4 pt-3 border-top hak-akses-container-edit-{{ $user->id }}" style="{{ in_array($user->role, ['sales', 'direktur']) ? 'display: none;' : '' }}">
                                                 <label class="form-label small fw-bold text-slate-dark mb-3"><i class="fas fa-check-square text-emerald-custom me-1"></i>Izin Akses Menu Khusus</label>
                                                 <div class="row px-2">
                                                     @foreach($daftarMenu as $val => $label)
@@ -228,17 +231,17 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-slate-dark">Tentukan Role <span class="text-danger">*</span></label>
-                    <select name="role" class="form-select bg-light fw-bold text-slate-dark" required>
+                    <select name="role" class="form-select bg-light fw-bold text-slate-dark" required id="selectRoleTambah" onchange="toggleHakAksesTambah(this)">
                         <option value="" disabled selected>-- Pilih Divisi --</option>
                         <option value="direktur">Direktur Utama</option>
-                        <option value="sales">Staf Sales / Marketing</option>
-                        <option value="admin_warehouse">Admin Gudang / Logistik</option>
                         <option value="admin_keuangan">Admin Keuangan / Penagihan</option>
+                        <option value="admin_warehouse">Admin Gudang / Logistik</option>
+                        <option value="sales">Staf Sales / Marketing</option>
                     </select>
                 </div>
 
                 {{-- CHECKBOX HAK AKSES MENU TAMBAH --}}
-                <div class="mb-0 mt-4 pt-3 border-top">
+                <div class="mb-0 mt-4 pt-3 border-top" id="hakAksesContainerTambah">
                     <label class="form-label small fw-bold text-slate-dark mb-3"><i class="fas fa-check-square text-emerald-custom me-1"></i>Izin Akses Menu Khusus</label>
                     <div class="row px-2">
                         @foreach($daftarMenu as $val => $label)
@@ -263,4 +266,37 @@
         </form>
     </div>
 </div>
+<script>
+    function toggleHakAksesEdit(selectObj, userId) {
+        var container = document.querySelector('.hak-akses-container-edit-' + userId);
+        if (selectObj.value === 'sales' || selectObj.value === 'direktur') {
+            container.style.display = 'none';
+            // Uncheck all boxes if hidden
+            var checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(function(cb) { cb.checked = false; });
+        } else {
+            container.style.display = 'block';
+        }
+    }
+
+    function toggleHakAksesTambah(selectObj) {
+        var container = document.getElementById('hakAksesContainerTambah');
+        if (selectObj.value === 'sales' || selectObj.value === 'direktur') {
+            container.style.display = 'none';
+            // Uncheck all boxes if hidden
+            var checkboxes = container.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(function(cb) { cb.checked = false; });
+        } else {
+            container.style.display = 'block';
+        }
+    }
+
+    // Trigger initial check for Tambah User form
+    document.addEventListener("DOMContentLoaded", function() {
+        var addRoleSelect = document.getElementById('selectRoleTambah');
+        if (addRoleSelect) {
+            toggleHakAksesTambah(addRoleSelect);
+        }
+    });
+</script>
 @endsection

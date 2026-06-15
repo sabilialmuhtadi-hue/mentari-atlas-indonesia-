@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'id_cust', 
@@ -20,7 +21,8 @@ class Customer extends Model
         'foto_ktp',      
         'foto_npwp',     
         'foto_toko',     
-        'plafon'         
+        'plafon',
+        'tempo_hari'
     ];
 
     // Mendaftarkan kolom bayangan (accessor) agar otomatis ikut terbaca saat data Customer dipanggil

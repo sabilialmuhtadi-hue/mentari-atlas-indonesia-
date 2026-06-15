@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supplier extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'kode_supplier',
@@ -15,7 +16,8 @@ class Supplier extends Model
         'ktp',
         'npwp',
         'telepon',
-        'alamat'
+        'alamat',
+        'jatuh_tempo_hari'
     ];
 
     // Menarik semua riwayat pembelian berdasarkan kesamaan nama supplier

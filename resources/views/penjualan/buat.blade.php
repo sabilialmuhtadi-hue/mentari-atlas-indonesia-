@@ -38,6 +38,23 @@
     
     /* Font Total */
     .font-monospace-custom { font-family: 'Courier New', Courier, monospace; font-weight: 700; letter-spacing: -0.5px; }
+    
+    /* Search Dropdown Styles */
+    .search-dropdown-menu {
+        max-height: 250px;
+        z-index: 1050;
+        top: 100%;
+        left: 0;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+    }
+    .search-item-row:hover {
+        background-color: #ecfdf5 !important;
+    }
+    .search-item-row {
+        transition: background-color 0.2s;
+    }
 </style>
 
 <div class="container-fluid py-4" style="background-color: #f8fafc; min-height: 80vh;">
@@ -66,7 +83,7 @@
                     <div class="card-body p-4">
                         <div class="mb-3">
                             <label class="form-label small fw-bold text-slate-dark mb-1">Pilih Customer / Toko *</label>
-                            <select name="customer_id" id="customer_id" class="form-select bg-light fw-bold text-slate-dark" onchange="applyCustomerData()" required>
+                            <select name="customer_id" id="customer_id" class="form-select bg-light fw-bold text-slate-dark select2" onchange="applyCustomerData()" required>
                                 <option value="" data-nama="" data-tingkat="Bronze" data-npwp="" data-ktp="" selected disabled>-- Pilih Pelanggan --</option>
                                 @foreach($customers as $c)
                                     <option value="{{ $c->id }}" 
@@ -104,15 +121,7 @@
                         </button>
                     </div>
 
-                    {{-- DATALIST MASTER UNTUK PENCARIAN (Disembunyikan) --}}
-                    <datalist id="master_list_barang">
-                        @foreach($barangs as $b)
-                            <option value="{{ $b->kode_barang }} - {{ $b->nama_barang }}" 
-                                    data-id="{{ $b->id }}" 
-                                    data-harga="{{ $b->harga_jual }}" 
-                                    data-stok="{{ $b->stok_akhir }}"></option>
-                        @endforeach
-                    </datalist>
+                    {{-- Datalist removed and replaced by custom search dropdown --}}
 
                     <div class="card-body p-0 flex-grow-1">
                         <div class="table-responsive">
@@ -129,11 +138,12 @@
                                 <tbody id="bodyBarang">
                                     <tr class="baris-barang">
                                         <td class="ps-4">
-                                            <div class="position-relative">
+                                            <div class="position-relative input-search-container">
                                                 <input type="text" class="form-control form-control-sm bg-light fw-medium text-slate-dark input-cari-barang" 
-                                                       list="master_list_barang" placeholder="Ketik & cari..." 
-                                                       onchange="pilihBarang(this)" autocomplete="off" required>
+                                                       placeholder="Ketik SKU atau Nama..." 
+                                                       oninput="cariBarang(this)" onfocus="cariBarang(this)" onblur="hideDropdown(this)" autocomplete="off" required>
                                                 <input type="hidden" name="barang_id[]" class="input-barang-id" required>
+                                                <div class="search-dropdown-menu d-none position-absolute w-100 bg-white border rounded shadow-sm overflow-auto"></div>
                                             </div>
                                         </td>
                                         <td>
@@ -179,13 +189,14 @@
         tr.className = 'baris-barang';
         tr.innerHTML = `
             <td class="ps-4">
-                <div class="position-relative">
-                    <input type="text" class="form-control form-control-sm bg-light fw-medium text-slate-dark input-cari-barang" 
-                           list="master_list_barang" placeholder="Ketik & cari..." 
-                           onchange="pilihBarang(this)" autocomplete="off" required>
-                    <input type="hidden" name="barang_id[]" class="input-barang-id" required>
-                </div>
-            </td>
+                                <div class="position-relative input-search-container">
+                                    <input type="text" class="form-control form-control-sm bg-light fw-medium text-slate-dark input-cari-barang" 
+                                           placeholder="Ketik SKU atau Nama..." 
+                                           oninput="cariBarang(this)" onfocus="cariBarang(this)" onblur="hideDropdown(this)" autocomplete="off" required>
+                                    <input type="hidden" name="barang_id[]" class="input-barang-id" required>
+                                    <div class="search-dropdown-menu d-none position-absolute w-100 bg-white border rounded shadow-sm overflow-auto"></div>
+                                </div>
+                            </td>
             <td>
                 <input type="text" class="form-control form-control-sm bg-white text-center border-0 input-stok fw-bold text-slate-muted" readonly placeholder="-">
             </td>
@@ -221,32 +232,112 @@
         }
     }
 
-    function pilihBarang(inputElement) {
-        const row = inputElement.closest('tr');
+    // Master data barang yang di-render dari PHP
+    const listBarangMaster = [
+        @foreach($barangs as $b)
+        {
+            id: {{ $b->id }},
+            kode: {!! json_encode($b->kode_barang) !!},
+            nama: {!! json_encode($b->nama_barang) !!},
+            stok: {{ $b->stok_akhir }},
+            harga: {{ $b->harga_jual }},
+            merek: {!! json_encode($b->merek ?? '') !!}
+        },
+        @endforeach
+    ];
+
+    function cariBarang(input) {
+        const query = input.value.toLowerCase().trim();
+        const container = input.closest('.input-search-container');
+        const dropdown = container.querySelector('.search-dropdown-menu');
+        
+        // Tampilkan semua barang (termasuk stok 0 agar bisa di-backorder)
+        const filtered = listBarangMaster.filter(b => {
+            if (query === '') return true;
+            return b.kode.toLowerCase().includes(query) || b.nama.toLowerCase().includes(query);
+        });
+
+        if (filtered.length === 0) {
+            dropdown.innerHTML = '<div class="text-muted p-3 text-center" style="font-size: 0.8rem;">Barang tidak ditemukan</div>';
+        } else {
+            let html = '';
+            filtered.forEach(b => {
+                const stokBadgeClass = b.stok > 10 ? 'bg-success-subtle text-success' : (b.stok > 0 ? 'bg-warning-subtle text-warning' : 'bg-danger-subtle text-danger');
+                html += `
+                    <div class="dropdown-item py-2 px-3 border-bottom d-flex justify-content-between align-items-center search-item-row" 
+                         style="cursor: pointer;" 
+                         onmousedown="pilihBarangManual(this, ${b.id})">
+                        <div class="pe-2" style="min-width: 0; flex: 1;">
+                            <div class="fw-bold text-slate-dark text-truncate" style="font-size: 0.85rem;">${b.kode}</div>
+                            <div class="text-slate-muted small text-truncate" style="font-size: 0.75rem;">${b.nama}</div>
+                            ${b.merek ? `<div class="text-muted small" style="font-size: 0.7rem; font-style: italic;">Merek: ${b.merek}</div>` : ''}
+                        </div>
+                        <div class="text-end flex-shrink-0">
+                            <span class="badge ${stokBadgeClass} fw-bold px-2 py-1" style="font-size: 0.7rem;">Stok: ${b.stok}</span>
+                            <div class="fw-bold text-emerald-custom mt-1" style="font-size: 0.8rem;">Rp ${b.harga.toLocaleString('id-ID')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            dropdown.innerHTML = html;
+        }
+        dropdown.classList.remove('d-none');
+    }
+
+    function pilihBarangManual(element, id) {
+        const row = element.closest('tr');
+        const inputCari = row.querySelector('.input-cari-barang');
         const hiddenId = row.querySelector('.input-barang-id');
         const inputStok = row.querySelector('.input-stok');
-        const valKetik = inputElement.value;
-        const datalistOptions = document.getElementById('master_list_barang').options;
         
-        let barangDitemukan = false;
+        const item = listBarangMaster.find(b => b.id === id);
+        if (item) {
+            inputCari.value = `${item.kode} - ${item.nama}`;
+            hiddenId.value = item.id;
+            inputStok.value = item.stok;
+            row.dataset.baseHarga = item.harga;
+            
+            applyTierToRow(row);
+        }
+    }
 
-        for (let i = 0; i < datalistOptions.length; i++) {
-            if (datalistOptions[i].value === valKetik) {
-                hiddenId.value = datalistOptions[i].getAttribute('data-id');
-                inputStok.value = datalistOptions[i].getAttribute('data-stok');
-                row.dataset.baseHarga = datalistOptions[i].getAttribute('data-harga');
-                barangDitemukan = true;
-                break;
+    function hideDropdown(input) {
+        setTimeout(() => {
+            const container = input.closest('.input-search-container');
+            const dropdown = container.querySelector('.search-dropdown-menu');
+            dropdown.classList.add('d-none');
+            validasiInputCari(input);
+        }, 250);
+    }
+
+    function validasiInputCari(input) {
+        const valKetik = input.value.trim().toLowerCase();
+        const row = input.closest('tr');
+        const hiddenId = row.querySelector('.input-barang-id');
+        const inputStok = row.querySelector('.input-stok');
+        
+        // Cek kecocokan persis (kode atau gabungan kode - nama)
+        const match = listBarangMaster.find(b => 
+            b.kode.toLowerCase() === valKetik ||
+            `${b.kode.toLowerCase()} - ${b.nama.toLowerCase()}` === valKetik
+        );
+        
+        if (match) {
+            input.value = `${match.kode} - ${match.nama}`;
+            hiddenId.value = match.id;
+            inputStok.value = match.stok;
+            row.dataset.baseHarga = match.harga;
+        } else {
+            const currentId = parseInt(hiddenId.value);
+            const currentItem = listBarangMaster.find(b => b.id === currentId);
+            if (!currentItem || `${currentItem.kode} - ${currentItem.nama}`.toLowerCase() !== valKetik) {
+                hiddenId.value = '';
+                inputStok.value = '';
+                row.dataset.baseHarga = 0;
+                row.querySelector('.input-harga').value = '';
+                input.value = '';
             }
         }
-
-        if (!barangDitemukan) {
-            hiddenId.value = '';
-            inputStok.value = '';
-            row.dataset.baseHarga = 0;
-            row.querySelector('.input-harga').value = '';
-        }
-
         applyTierToRow(row);
     }
 

@@ -11,16 +11,16 @@
 
 <table>
     <tr>
-        <td colspan="{{ $totalCols }}" style="font-size: 14px; font-weight: bold;">PT. MENTARI ATLAS</td>
+        <td colspan="{{ $totalCols }}" style="font-size: 18px; font-weight: bold; color: #059669; text-align: center;">PT. MENTARI ATLAS</td>
     </tr>
     <tr>
-        <td colspan="{{ $totalCols }}" style="font-size: 12px; font-weight: bold;">{{ $judulLaporan }}</td>
+        <td colspan="{{ $totalCols }}" style="font-size: 14px; font-weight: bold; text-align: center;">{{ $judulLaporan }}</td>
     </tr>
     <tr>
-        <td colspan="{{ $totalCols }}" style="font-size: 10px; color: #555555;">Periode: {{ $periodeLabel }}</td>
+        <td colspan="{{ $totalCols }}" style="font-size: 11px; color: #475569; text-align: center;">Periode: {{ $periodeLabel }}</td>
     </tr>
     <tr>
-        <td colspan="{{ $totalCols }}" style="font-size: 10px; color: #555555;">Filter Grup: {{ empty($groupBy) ? 'Semua Data' : strtoupper(implode(', ', $groupBy)) }}</td>
+        <td colspan="{{ $totalCols }}" style="font-size: 11px; color: #475569; text-align: center;">Filter Grup: {{ empty($groupBy) ? 'Semua Data' : strtoupper(implode(', ', $groupBy)) }}</td>
     </tr>
     <tr><td colspan="{{ $totalCols }}"></td></tr> <tbody>
         @php $grandQty = 0; $grandNominal = 0; $grandSisa = 0; @endphp
@@ -36,7 +36,7 @@
             @endif
 
             <tr>
-                @php $thStyle = "background-color: #d9d9d9; font-weight: bold; border: 1px solid #000000; text-align: center;"; @endphp
+                @php $thStyle = "background-color: #10b981; color: #ffffff; font-weight: bold; border: 1px solid #000000; text-align: center;"; @endphp
                 
                 <th style="{{ $thStyle }}">No</th>
                 <th style="{{ $thStyle }}">Tanggal</th>
@@ -126,7 +126,7 @@
 
             @if($groupName !== 'Semua Data')
             <tr>
-                @php $subBg = "background-color: #f2f2f2; border: 1px solid #000000; font-weight: bold;" @endphp
+                @php $subBg = "background-color: #e2e8f0; border: 1px solid #000000; font-weight: bold; color: #0f172a;" @endphp
                 @if($kategori === 'penjualan')
                     <td colspan="7" style="{{ $subBg }} text-align: right;">Subtotal :</td><td style="{{ $subBg }} text-align: center;">{{ $subQty }}</td><td style="{{ $subBg }} text-align: right;">{{ $subNominal }}</td><td style="{{ $subBg }}"></td>
                 @elseif(in_array($kategori, ['pembelian', 'retur_jual', 'retur_beli']))
@@ -147,17 +147,17 @@
         
         @if($groupedData->count() > 0)
         <tr><td colspan="{{ $totalCols }}"></td></tr> <tr>
-            @php $grandBg = "background-color: #d9d9d9; border: 1px solid #000000; font-weight: bold;" @endphp
+            @php $grandBg = "background-color: #0f172a; color: #ffffff; border: 1px solid #000000; font-weight: bold;" @endphp
             @if($kategori === 'penjualan')
-                <td colspan="7" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: center;">{{ $grandQty }}</td><td style="{{ $grandBg }} text-align: right;">{{ $grandNominal }}</td><td style="{{ $grandBg }}"></td>
+                <td colspan="7" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: center;">{{ $grandQty }}</td><td style="{{ $grandBg }} text-align: right; color: #34d399;">{{ $grandNominal }}</td><td style="{{ $grandBg }}"></td>
             @elseif(in_array($kategori, ['pembelian', 'retur_jual', 'retur_beli']))
-                <td colspan="6" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: center;">{{ $grandQty }}</td><td style="{{ $grandBg }} text-align: right;">{{ $grandNominal }}</td><td style="{{ $grandBg }}"></td>
+                <td colspan="6" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: center;">{{ $grandQty }}</td><td style="{{ $grandBg }} text-align: right; color: #34d399;">{{ $grandNominal }}</td><td style="{{ $grandBg }}"></td>
             @elseif(in_array($kategori, ['piutang', 'utang']))
-                <td colspan="4" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: right;">{{ $grandNominal }}</td><td style="{{ $grandBg }} text-align: right; color: #ff0000;">{{ $grandSisa }}</td><td style="{{ $grandBg }}"></td>
+                <td colspan="4" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: right;">{{ $grandNominal }}</td><td style="{{ $grandBg }} text-align: right; color: #f87171;">{{ $grandSisa }}</td><td style="{{ $grandBg }}"></td>
             @elseif(in_array($kategori, ['cn', 'dn']))
-                <td colspan="4" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: right;">{{ $grandNominal }}</td><td style="{{ $grandBg }}"></td>
+                <td colspan="4" style="{{ $grandBg }} text-align: right;">GRAND TOTAL :</td><td style="{{ $grandBg }} text-align: right; color: #34d399;">{{ $grandNominal }}</td><td style="{{ $grandBg }}"></td>
             @elseif($kategori === 'backorder')
-                <td colspan="6" style="{{ $grandBg }} text-align: right;">GRAND TOTAL ANTRIAN :</td><td style="{{ $grandBg }} text-align: center; color: #ff0000;">{{ $grandQty }}</td><td style="{{ $grandBg }}"></td>
+                <td colspan="6" style="{{ $grandBg }} text-align: right;">GRAND TOTAL ANTRIAN :</td><td style="{{ $grandBg }} text-align: center; color: #f87171;">{{ $grandQty }}</td><td style="{{ $grandBg }}"></td>
             @endif
         </tr>
         @endif

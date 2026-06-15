@@ -4,34 +4,38 @@
     <meta charset="UTF-8">
     <title>{{ $judulLaporan }}</title>
     <style>
-        /* TEMA LAPORAN KELAS EKSEKUTIF (HIGH-DENSITY) */
-        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 10px; color: #1e293b; margin: 0; padding: 15px; }
+        /* TEMA LAPORAN KELAS EKSEKUTIF PREMIUM */
+        body { font-family: 'Inter', 'Helvetica', 'Arial', sans-serif; font-size: 10px; color: #1e293b; margin: 0; padding: 15px; }
         
-        .kop-surat { text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 8px; margin-bottom: 15px; }
-        .kop-surat h1 { margin: 0; font-size: 20px; color: #0f172a; letter-spacing: 1px; font-weight: 800; }
-        .kop-surat p { margin: 3px 0 0 0; color: #475569; font-size: 12px; font-weight: bold; text-transform: uppercase;}
+        .kop-surat { text-align: center; border-bottom: 3px solid #10b981; padding-bottom: 12px; margin-bottom: 20px; position: relative; }
+        .kop-surat h1 { margin: 0; font-size: 24px; color: #059669; letter-spacing: 2px; font-weight: 900; text-transform: uppercase; }
+        .kop-surat p { margin: 5px 0 0 0; color: #475569; font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
         
-        .info-laporan { margin-bottom: 15px; font-size: 10px; }
+        .info-laporan { margin-bottom: 15px; font-size: 10px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .info-laporan table { width: 100%; }
-        .info-laporan td { padding: 2px 0; }
+        .info-laporan td { padding: 3px 0; }
         
         /* JUDUL KELOMPOK DATA DI ATAS TABEL */
-        .grup-header { font-size: 11px; font-weight: bold; color: #0f172a; margin-top: 20px; margin-bottom: 6px; padding-left: 2px; }
-        .grup-header span { color: #10b981; margin-right: 6px; font-size: 12px; }
+        .grup-header { font-size: 11px; font-weight: bold; color: #0f172a; margin-top: 25px; margin-bottom: 8px; padding: 6px 10px; background-color: #d1fae5; border-left: 4px solid #10b981; border-radius: 4px; display: inline-block; }
         
         /* TABEL UTAMA DENGAN DUKUNGAN PERFECT ALIGNMENT */
-        .tabel-data { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
-        .tabel-data th, .tabel-data td { border: 1px solid #cbd5e1; padding: 6px 5px; vertical-align: middle; word-wrap: break-word; }
-        .tabel-data th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; text-transform: uppercase; font-size: 9px; text-align: center; }
+        .tabel-data { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+        .tabel-data th, .tabel-data td { border: 1px solid #cbd5e1; padding: 8px 6px; vertical-align: middle; word-wrap: break-word; }
+        .tabel-data th { background-color: #10b981; color: #ffffff; font-weight: bold; text-transform: uppercase; font-size: 9px; text-align: center; letter-spacing: 0.5px; border-color: #059669; }
         .tabel-data td { font-size: 9px; }
+        
+        /* Zebra Striping */
+        .tabel-data tbody tr:nth-child(even) { background-color: #f8fafc; }
         
         /* Mencegah pemotongan baris yang jelek saat cetak PDF */
         tr { page-break-inside: avoid; }
-        .grup-wrapper { page-break-inside: avoid; margin-bottom: 15px; }
+        .grup-wrapper { page-break-inside: avoid; margin-bottom: 20px; }
         
         /* STYLE NOTA TOTALAN */
-        .bg-subtotal td { background-color: #f8fafc; font-weight: bold; color: #0f172a; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; font-style: italic; }
-        .bg-grandtotal td { background-color: #cbd5e1; font-weight: 800; font-size: 10px; border-top: 2px solid #475569; padding: 8px 4px; }
+        .bg-subtotal td { background-color: #e2e8f0 !important; font-weight: bold; color: #0f172a; border-top: 2px solid #94a3b8; font-style: italic; }
+        .bg-grandtotal td { background-color: #0f172a !important; color: #ffffff !important; font-weight: 800; font-size: 11px; padding: 10px 6px; border: none; }
+        .bg-grandtotal .text-success { color: #34d399 !important; }
+        .bg-grandtotal .text-danger { color: #f87171 !important; }
         
         .text-right { text-align: right !important; }
         .text-center { text-align: center !important; }
@@ -40,14 +44,18 @@
         .text-success { color: #16a34a; }
 
         @page { size: A4 landscape; margin: 10mm; }
-        @media print { body { padding: 0; } }
+        @media print { body { padding: 0; } .info-laporan { border: none; } }
     </style>
 </head>
 <body onload="{{ $format === 'pdf' ? 'window.print()' : '' }}">
 
     <div class="kop-surat">
-        <h1>PT. MENTARI ATLAS</h1>
-        <p>{{ $judulLaporan }}</p>
+        <h1>PT. MENTARI ATLAS INDONESIA</h1>
+        <div style="color: #475569; font-size: 10px; margin-top: 5px; line-height: 1.4;">
+            Jl. Jenderal Sudirman No. 123, Pontianak, Kalimantan Barat<br>
+            Telp: (0561) 123456 | Email: info@mentariprimasemesta.com
+        </div>
+        <p style="margin-top: 15px;">{{ $judulLaporan }}</p>
     </div>
 
     <div class="info-laporan">
@@ -71,7 +79,7 @@
             {{-- 1. TAMPILAN NAMA GRUP DI ATAS TABEL (SAMA SEPERTI EXCEL) --}}
             @if($groupName !== 'Semua Data')
                 <div class="grup-header">
-                    <span>■</span> {{ $groupName }}
+                    <i class="fas fa-layer-group"></i> {{ $groupName }}
                 </div>
             @endif
 
@@ -164,6 +172,41 @@
                         @endif
                     </tr>
                     @endif
+
+                    {{-- 4. GRAND TOTAL UTAMA DI PALING BAWAH LAPORAN (PASTI SINKRON KARENA DI DALAM TABEL YANG SAMA) --}}
+                    @if($loop->last)
+                    <tr class="bg-grandtotal">
+                        @if($kategori === 'penjualan')
+                            <td colspan="6" class="text-right">GRAND TOTAL KESELURUHAN :</td>
+                            <td class="text-center text-success">{{ $grandQty }}</td>
+                            <td class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
+                            <td></td>
+                        @elseif($kategori === 'pembelian')
+                            <td colspan="5" class="text-right">GRAND TOTAL KESELURUHAN :</td>
+                            <td class="text-center text-success">{{ $grandQty }}</td>
+                            <td class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
+                            <td></td>
+                        @elseif(in_array($kategori, ['retur_jual', 'retur_beli']))
+                            <td colspan="5" class="text-right">GRAND TOTAL KESELURUHAN :</td>
+                            <td class="text-center text-success">{{ $grandQty }}</td>
+                            <td class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
+                            <td></td>
+                        @elseif(in_array($kategori, ['piutang', 'utang']))
+                            <td colspan="4" class="text-right">GRAND TOTAL KESELURUHAN :</td>
+                            <td class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
+                            <td class="text-right text-danger">Rp {{ number_format($grandSisa, 0, ',', '.') }}</td>
+                            <td></td>
+                        @elseif(in_array($kategori, ['cn', 'dn']))
+                            <td colspan="4" class="text-right">GRAND TOTAL :</td>
+                            <td class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
+                            <td></td>
+                        @elseif($kategori === 'backorder')
+                            <td colspan="5" class="text-right">GRAND TOTAL ANTRIAN :</td>
+                            <td class="text-center text-danger" style="font-size: 10px; font-weight: bold;">{{ $grandQty }}</td>
+                            <td></td>
+                        @endif
+                    </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
@@ -171,48 +214,28 @@
         <table class="tabel-data">
             <tbody>
                 <tr><td class="text-center" style="padding: 30px; font-size: 11px;">Tidak ada data transaksi yang ditemukan.</td></tr>
-            </tbody>
-        </table>
     @endforelse
-    
-    {{-- 4. GRAND TOTAL UTAMA DI PALING BAWAH LAPORAN (KOLOM DIKUNCI PASTI SINKRON) --}}
-    @if($groupedData->count() > 0)
-    <table class="tabel-data" style="margin-top: 15px;">
-        <tbody>
-            <tr class="bg-grandtotal">
-                @if($kategori === 'penjualan')
-                    <td colspan="6" width="72%" class="text-right">GRAND TOTAL KESELURUHAN :</td>
-                    <td width="5%" class="text-center text-success">{{ $grandQty }}</td>
-                    <td width="14%" class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
-                    <td width="9%"></td>
-                @elseif($kategori === 'pembelian')
-                    <td colspan="5" width="66%" class="text-right">GRAND TOTAL KESELURUHAN :</td>
-                    <td width="5%" class="text-center text-success">{{ $grandQty }}</td>
-                    <td width="16%" class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
-                    <td width="13%"></td>
-                @elseif(in_array($kategori, ['retur_jual', 'retur_beli']))
-                    <td colspan="5" width="68%" class="text-right">GRAND TOTAL KESELURUHAN :</td>
-                    <td width="5%" class="text-center text-success">{{ $grandQty }}</td>
-                    <td width="14%" class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
-                    <td width="13%"></td>
-                @elseif(in_array($kategori, ['piutang', 'utang']))
-                    <td colspan="4" width="56%" class="text-right">GRAND TOTAL KESELURUHAN :</td>
-                    <td width="16%" class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
-                    <td width="16%" class="text-right text-danger">Rp {{ number_format($grandSisa, 0, ',', '.') }}</td>
-                    <td width="12%"></td>
-                @elseif(in_array($kategori, ['cn', 'dn']))
-                    <td colspan="4" width="56%" class="text-right">GRAND TOTAL :</td>
-                    <td width="16%" class="text-right text-success">Rp {{ number_format($grandNominal, 0, ',', '.') }}</td>
-                    <td width="28%"></td>
-                @elseif($kategori === 'backorder')
-                    <td colspan="5" width="73%" class="text-right">GRAND TOTAL ANTRIAN :</td>
-                    <td width="10%" class="text-center text-danger" style="font-size: 10px; font-weight: bold;">{{ $grandQty }}</td>
-                    <td width="17%"></td>
-                @endif
+
+    {{-- 5. KOTAK TANDA TANGAN (SIGNATURE BOX) --}}
+    <div style="margin-top: 50px; width: 100%; page-break-inside: avoid;">
+        <table style="width: 100%; border: none;">
+            <tr style="border: none;">
+                <td style="width: 35%; border: none; text-align: center; font-size: 11px;">
+                    <br>
+                    Dicetak Oleh,<br><br><br><br><br>
+                    ( <b>{{ $user->name }}</b> )<br>
+                    Admin / Staff
+                </td>
+                <td style="width: 30%; border: none;"></td>
+                <td style="width: 35%; border: none; text-align: center; font-size: 11px;">
+                    Pontianak, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}<br>
+                    Mengetahui,<br><br><br><br><br>
+                    ( _______________________ )<br>
+                    <b>Direktur</b>
+                </td>
             </tr>
-        </tbody>
-    </table>
-    @endif
+        </table>
+    </div>
 
 </body>
 </html>

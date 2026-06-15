@@ -48,14 +48,23 @@
 
 <div class="container-fluid py-4" style="background-color: #f8fafc; min-height: 80vh;">
     
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <h1 class="h3 mb-0 text-slate-dark fw-bold"><i class="fas fa-users text-emerald-custom me-2"></i>Manajemen Data Customer</h1>
             <p class="text-slate-muted small mb-0 mt-1">Kelola data pelanggan, dokumen legalitas, plafon kredit, dan tingkatan tier.</p>
         </div>
-        <button class="btn btn-emerald-custom shadow-sm rounded-pill px-4 fw-bold" style="background-color: #10b981; color: white; border: none;" data-bs-toggle="modal" data-bs-target="#modalTambahCustomer">
-            <i class="fas fa-plus me-2"></i> Tambah Customer
-        </button>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <form action="{{ route('customer.index') }}" method="GET" class="m-0 d-flex gap-2">
+                <input type="text" name="search" class="form-control form-control-sm rounded-pill px-3 bg-white border" placeholder="Cari ID/Nama..." value="{{ $search ?? '' }}" style="width: 200px; height: 38px;">
+                <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold">Cari</button>
+                @if(!empty($search))
+                    <a href="{{ route('customer.index') }}" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-bold d-flex align-items-center">Reset</a>
+                @endif
+            </form>
+            <button class="btn btn-emerald-custom shadow-sm rounded-pill px-4 fw-bold" style="background-color: #10b981; color: white; border: none; height: 38px;" data-bs-toggle="modal" data-bs-target="#modalTambahCustomer">
+                <i class="fas fa-plus me-2"></i> Tambah Customer
+            </button>
+        </div>
     </div>
 
     @if (session('success'))
@@ -77,10 +86,11 @@
             <table class="table table-mentari table-mentari-compact align-middle mb-0" style="font-size: 0.85rem; width: 100%;">
                 <thead>
                     <tr>
-                        <th class="ps-3 text-nowrap">ID Cust</th>
+                        <th class="ps-3 text-nowrap">Kode Customer</th>
                         <th>Nama Customer / Toko</th>
                         <th>No. Telepon</th>
                         <th>Plafon (Limit Kredit)</th>
+                        <th class="text-center">Termin Bayar</th>
                         <th class="text-center">Tingkatan Saat Ini</th>
                         <th class="text-center pe-3" style="width: 1%; white-space: nowrap;">Aksi</th>
                     </tr>
@@ -92,17 +102,31 @@
                         <td class="fw-bold text-slate-dark">{{ $c->nama_customer }}</td>
                         <td class="text-slate-muted">{{ $c->no_telp ?: '-' }}</td>
                         <td class="fw-bold text-danger">Rp {{ number_format($c->plafon, 0, ',', '.') }}</td>
+                        <td class="text-center"><span class="badge bg-warning text-dark rounded-pill px-2 py-1">{{ $c->tempo_hari ?? 30 }} Hari</span></td>
                         <td class="text-center">
-                            @if(($c->tingkat_customer ?? 'Bronze') === 'Gold')
-                                <span class="badge badge-gold rounded-pill px-3 py-2 fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="fas fa-crown me-1"></i>GOLD</span>
-                            @elseif(($c->tingkat_customer ?? 'Bronze') === 'Silver')
-                                <span class="badge badge-silver rounded-pill px-3 py-2 fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="fas fa-medal me-1 text-secondary"></i>SILVER</span>
-                            @else
-                                <span class="badge badge-bronze rounded-pill px-3 py-2 fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="fas fa-award me-1"></i>BRONZE</span>
-                            @endif
+                            <div class="mb-2">
+                                @if(($c->tingkat_customer ?? 'Bronze') === 'Gold')
+                                    <span class="badge badge-gold rounded-pill px-3 py-2 fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="fas fa-crown me-1"></i>GOLD</span>
+                                @elseif(($c->tingkat_customer ?? 'Bronze') === 'Silver')
+                                    <span class="badge badge-silver rounded-pill px-3 py-2 fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="fas fa-medal me-1 text-secondary"></i>SILVER</span>
+                                @else
+                                    <span class="badge badge-bronze rounded-pill px-3 py-2 fw-bold shadow-sm" style="letter-spacing: 0.5px;"><i class="fas fa-award me-1"></i>BRONZE</span>
+                                @endif
+                            </div>
+                            <form action="{{ route('customer.updateTier', $c->id) }}" method="POST" class="m-0 d-flex justify-content-center align-items-center gap-1">
+                                @csrf
+                                <select name="tingkat_customer" class="form-select form-select-sm rounded select-tier-custom shadow-none" style="width: 85px; font-size: 0.7rem; height: 28px; padding-top: 2px; padding-bottom: 2px;" required>
+                                    <option value="Bronze" {{ ($c->tingkat_customer ?? 'Bronze') == 'Bronze' ? 'selected' : '' }}>Bronze</option>
+                                    <option value="Silver" {{ ($c->tingkat_customer ?? 'Bronze') == 'Silver' ? 'selected' : '' }}>Silver</option>
+                                    <option value="Gold" {{ ($c->tingkat_customer ?? 'Bronze') == 'Gold' ? 'selected' : '' }}>Gold</option>
+                                </select>
+                                <button type="submit" class="btn-action-mentari" style="width: 28px; height: 28px;" title="Simpan Tingkatan">
+                                    <i class="fas fa-check" style="font-size: 0.7rem;"></i>
+                                </button>
+                            </form>
                         </td>
                         <td class="pe-3 text-center align-middle" style="white-space: nowrap;">
-                            <div class="d-flex justify-content-end align-items-center gap-2 flex-nowrap">
+                            <div class="d-flex justify-content-center align-items-center gap-2 flex-nowrap">
                                 
                                 {{-- Tombol Detail --}}
                                 <button type="button" class="btn-action-mentari" data-bs-toggle="modal" data-bs-target="#modalDetail{{ $c->id }}" title="Lihat Rincian">
@@ -113,19 +137,6 @@
                                 <button type="button" class="btn-action-mentari" data-bs-toggle="modal" data-bs-target="#modalEdit{{ $c->id }}" title="Edit Data">
                                     <i class="fas fa-edit"></i>
                                 </button>
-
-                                {{-- Form Update Tier Cepat --}}
-                                <form action="{{ route('customer.updateTier', $c->id) }}" method="POST" class="m-0 d-flex align-items-center gap-1 ms-1">
-                                    @csrf
-                                    <select name="tingkat_customer" class="form-select form-select-sm rounded select-tier-custom shadow-none" style="width: 90px; font-size: 0.75rem; height: 34px;" required>
-                                        <option value="Bronze" {{ ($c->tingkat_customer ?? 'Bronze') == 'Bronze' ? 'selected' : '' }}>Bronze</option>
-                                        <option value="Silver" {{ ($c->tingkat_customer ?? 'Bronze') == 'Silver' ? 'selected' : '' }}>Silver</option>
-                                        <option value="Gold" {{ ($c->tingkat_customer ?? 'Bronze') == 'Gold' ? 'selected' : '' }}>Gold</option>
-                                    </select>
-                                    <button type="submit" class="btn-action-mentari" title="Simpan Tingkatan">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </form>
 
                                 {{-- Tombol Hapus --}}
                                 <form action="{{ route('customer.destroy', $c->id) }}" method="POST" class="m-0 ms-1">
@@ -170,9 +181,10 @@
                 <div class="modal-body p-4 bg-white">
                     <div class="row g-4">
                         <div class="col-md-6">
-                            <div class="mb-3"><span class="small text-muted d-block">ID Customer</span><span class="fw-bold">{{ $c->id_cust }}</span></div>
+                            <div class="mb-3"><span class="small text-muted d-block">Kode Customer</span><span class="fw-bold">{{ $c->id_cust }}</span></div>
                             <div class="mb-3"><span class="small text-muted d-block">Nomor Telepon</span><span class="fw-bold">{{ $c->no_telp ?: '-' }}</span></div>
                             <div class="mb-3"><span class="small text-muted d-block">Plafon Kredit</span><span class="fw-bold text-danger">Rp {{ number_format($c->plafon, 0, ',', '.') }}</span></div>
+                            <div class="mb-3"><span class="small text-muted d-block">Termin Jatuh Tempo</span><span class="fw-bold text-danger">{{ $c->tempo_hari ?? 30 }} Hari</span></div>
                             <div class="mb-3"><span class="small text-muted d-block">Alamat Lengkap</span><span class="fw-bold">{{ $c->alamat ?: '-' }}</span></div>
                         </div>
                         <div class="col-md-6">
@@ -249,11 +261,18 @@
                             <label class="form-label small fw-bold text-slate-dark">Alamat Lengkap</label>
                             <textarea name="alamat" class="form-control bg-light" rows="2">{{ $c->alamat }}</textarea>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
                             <label class="form-label small fw-bold text-slate-dark">Plafon (Limit Kredit Utang)</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light fw-bold text-slate-muted border-end-0">Rp</span>
                                 <input type="number" name="plafon" class="form-control bg-light border-start-0" value="{{ $c->plafon }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-slate-dark">Batas Tempo (Hari)</label>
+                            <div class="input-group">
+                                <input type="number" name="tempo_hari" class="form-control bg-light border-end-0" value="{{ $c->tempo_hari ?? 30 }}">
+                                <span class="input-group-text bg-light fw-bold text-slate-muted border-start-0">Hari</span>
                             </div>
                         </div>
                         <div class="col-12 mt-3"><hr class="my-1"></div>
@@ -312,11 +331,18 @@
                         <label class="form-label small fw-bold text-slate-dark">Alamat Lengkap</label>
                         <textarea name="alamat" class="form-control bg-light" rows="2"></textarea>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <label class="form-label small fw-bold text-slate-dark">Plafon (Limit Kredit Utang)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light fw-bold text-slate-muted border-end-0">Rp</span>
                             <input type="number" name="plafon" class="form-control bg-light border-start-0" value="0">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-slate-dark">Batas Tempo (Hari)</label>
+                        <div class="input-group">
+                            <input type="number" name="tempo_hari" class="form-control bg-light border-end-0" value="30">
+                            <span class="input-group-text bg-light fw-bold text-slate-muted border-start-0">Hari</span>
                         </div>
                     </div>
                     <div class="col-12 mt-3"><hr class="my-1"></div>

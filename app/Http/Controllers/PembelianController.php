@@ -13,15 +13,16 @@ use App\Models\CreditNote;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Models\ActivityLog;
 
 class PembelianController extends Controller
 {
     public function index()
     {
-        $barangs = Barang::orderBy('nama_barang', 'asc')->get();
+        $barangs = Barang::orderBy('kode_barang', 'asc')->get();
         // Tampilkan semua PO, yang paling baru di atas
         $riwayat = Pembelian::with('barang')->orderBy('created_at', 'asc')->get();
-        $suppliers = Supplier::orderBy('nama_supplier', 'asc')->get();
+        $suppliers = Supplier::orderBy('id', 'asc')->get();
         
         return view('pembelian.index', compact('barangs', 'riwayat', 'suppliers'));
     }
@@ -58,15 +59,32 @@ class PembelianController extends Controller
                 'status_barang'  => 'pending', // <--- STOK TERTATAHAN DI SINI
             ]);
 
-            // 2. OTOMATISASI JURNAL UTANG SUPPLIER (Utuh 100%)
-            $noUtangJurnal = 'UTG-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
-            Utang::create([
-                'no_utang_jurnal'     => $noUtangJurnal,
-                'pembelian_id'        => $pembelian->id,
-                'total_utang'         => $total_bayar,
-                'total_dibayar'       => 0,
-                'status_bayar'        => 'belum_bayar',
-                'tanggal_jatuh_tempo' => date('Y-m-d', strtotime('+30 days')),
+            // 2. Update HPP (harga_beli) di master Barang jika ada perubahan
+            $barang = Barang::find($request->barang_id);
+            if ($barang && $barang->harga_beli != $request->harga_beli_hpp) {
+                $oldHpp = $barang->harga_beli;
+                $newHpp = $request->harga_beli_hpp;
+                
+                $barang->harga_beli = $newHpp;
+                $barang->save();
+
+                // Catat perubahan HPP ke riwayat
+                \App\Models\StockHistory::record(
+                    $barang,
+                    0, // tidak ada perubahan fisik stok
+                    'edit_data',
+                    $no_pembelian,
+                    "Update HPP via PO: Rp " . number_format($oldHpp, 0, ',', '.') . " -> Rp " . number_format($newHpp, 0, ',', '.')
+                );
+            }
+
+            // Utang Supplier ditunda sampai proses Sortir fisik barang (dipindahkan ke FASE 2)
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'TAMBAH PEMBELIAN',
+                'description' => Auth::user()->name . ' membuat dokumen Purchase Order (PO) baru: ' . $no_pembelian,
+                'ip_address' => request()->ip(),
             ]);
 
             DB::commit();
@@ -159,8 +177,41 @@ class PembelianController extends Controller
                 // Credit Note dan Pemotongan Utang DITANGGUHKAN sampai tombol "Return Sekarang" diklik.
             }
 
+            // 4. OTOMATISASI JURNAL UTANG SUPPLIER (Dibuat setelah barang tiba dan disortir)
+            // Pastikan utang belum dibuat (untuk menghindari dobel pada PO lama)
+            if (!Utang::where('pembelian_id', $pembelian->id)->exists()) {
+                $noUtangJurnal = 'UTG-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+                
+                // Cari data master supplier untuk mengambil Termin Jatuh Tempo
+                $supplierMaster = \App\Models\Supplier::where('nama_supplier', $pembelian->nama_supplier)->first();
+                $jatuhTempoHari = $supplierMaster && $supplierMaster->jatuh_tempo_hari !== null 
+                                    ? $supplierMaster->jatuh_tempo_hari 
+                                    : 30; // Default fallback
+
+                Utang::create([
+                    'no_utang_jurnal'     => $noUtangJurnal,
+                    'pembelian_id'        => $pembelian->id,
+                    'total_utang'         => $pembelian->total_bayar,
+                    'total_dibayar'       => 0,
+                    'status_bayar'        => 'belum_bayar',
+                    'tanggal_jatuh_tempo' => date('Y-m-d', strtotime('+' . $jatuhTempoHari . ' days')),
+                ]);
+            }
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'UPDATE STATUS PEMBELIAN',
+                'description' => Auth::user()->name . ' menyelesaikan proses QC/Sortir untuk PO: ' . $pembelian->no_pembelian,
+                'ip_address' => request()->ip(),
+            ]);
+
             DB::commit();
-            return back()->with('success', "Proses QC Selesai! Stok Bagus & Rusak telah di-update. (Draf Klaim Retur/Utang telah disiapkan dan menunggu persetujuan).");
+
+            if ($request->has('potong_tagihan') && ($request->qty_rusak > 0 || $request->qty_kurang > 0)) {
+                return back()->with('success', "Proses QC Selesai! Stok Bagus & Rusak telah di-update. (Draf Klaim Retur/Utang telah disiapkan dan menunggu persetujuan).");
+            } else {
+                return back()->with('success', "Proses QC Selesai! Semua stok bagus telah dimasukkan ke gudang.");
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();

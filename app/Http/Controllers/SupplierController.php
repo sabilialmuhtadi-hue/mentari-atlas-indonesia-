@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
 
 class SupplierController extends Controller
 {
@@ -27,15 +29,25 @@ class SupplierController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'kode_supplier' => 'required|unique:suppliers,kode_supplier',
             'nama_supplier' => 'required|string|max:255',
             'ktp'           => 'nullable|string|max:50',
             'npwp'          => 'nullable|string|max:50',
             'telepon'       => 'nullable|string|max:50',
-            'alamat'        => 'nullable|string'
+            'alamat'        => 'nullable|string',
+            'jatuh_tempo_hari' => 'nullable|integer|min:0'
         ]);
 
-        Supplier::create($request->all());
+        $data = $request->all();
+        $data['kode_supplier'] = 'SUP-' . date('YmdHis');
+
+        $supplier = Supplier::create($data);
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'TAMBAH SUPPLIER',
+            'description' => Auth::user()->name . ' menambahkan supplier baru: ' . $supplier->kode_supplier . ' - ' . $supplier->nama_supplier,
+            'ip_address' => request()->ip(),
+        ]);
 
         return back()->with('success', 'Data Supplier berhasil ditambahkan.');
     }
@@ -43,16 +55,24 @@ class SupplierController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'kode_supplier' => 'required|unique:suppliers,kode_supplier,'.$id,
             'nama_supplier' => 'required|string|max:255',
             'ktp'           => 'nullable|string|max:50',
             'npwp'          => 'nullable|string|max:50',
             'telepon'       => 'nullable|string|max:50',
-            'alamat'        => 'nullable|string'
+            'alamat'        => 'nullable|string',
+            'jatuh_tempo_hari' => 'nullable|integer|min:0'
         ]);
 
         $supplier = Supplier::findOrFail($id);
-        $supplier->update($request->all());
+        $data = $request->except(['kode_supplier']); // Hindari pengubahan kode jika di-submit
+        $supplier->update($data);
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'EDIT SUPPLIER',
+            'description' => Auth::user()->name . ' memperbarui data supplier: ' . $supplier->kode_supplier . ' - ' . $supplier->nama_supplier,
+            'ip_address' => request()->ip(),
+        ]);
 
         return back()->with('success', 'Data Supplier berhasil diperbarui.');
     }
@@ -61,12 +81,17 @@ class SupplierController extends Controller
     {
         $supplier = Supplier::findOrFail($id);
         
-        // Proteksi: Mencegah penghapusan jika supplier sudah punya riwayat di tabel pembelian
-        if ($supplier->pembelians()->exists()) {
-            return back()->withErrors(['error' => 'Gagal! Supplier tidak dapat dihapus karena sudah memiliki riwayat transaksi pembelian stok.']);
-        }
+        $kodeSupplier = $supplier->kode_supplier;
+        $namaSupplier = $supplier->nama_supplier;
+        $supplier->delete(); // Soft delete
 
-        $supplier->delete();
-        return back()->with('success', 'Data Supplier berhasil dihapus.');
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'HAPUS SUPPLIER',
+            'description' => Auth::user()->name . ' menghapus (soft delete) data supplier: ' . $kodeSupplier . ' - ' . $namaSupplier,
+            'ip_address' => request()->ip(),
+        ]);
+
+        return back()->with('success', 'Data Supplier berhasil dihapus dari daftar aktif.');
     }
 }

@@ -47,6 +47,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/get-items-so/{id}', [ReturController::class, 'getItemsSO'])->name('retur.get-items-so');
     Route::get('/get-items-po/{id}', [ReturController::class, 'getItemsPO'])->name('retur.get-items-po');
 
+    // Endpoint API Notifikasi Real-time
+    Route::get('/api/notifications', [DashboardController::class, 'getNotifications'])->name('api.notifications');
+
     // =======================================================================
     // RUTE BUAT ORDER: Semua Role (Termasuk Direktur) bisa tes buat order
     // =======================================================================
@@ -62,11 +65,15 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/customer/{id}', [CustomerController::class, 'destroy'])->name('customer.destroy');
     });
 
-    // HALAMAN KERJA DIVISI WAREHOUSE & RETUR BARANG
-    Route::middleware(['role:direktur,admin_warehouse,warehouse,admin warehouse,return_barang'])->group(function () {
+    // HALAMAN KERJA DIVISI WAREHOUSE
+    Route::middleware(['role:direktur,admin_warehouse,warehouse,admin warehouse'])->group(function () {
         Route::get('/warehouse/dashboard', [DashboardController::class, 'warehouseIndex'])->name('warehouse.dashboard');
-        
-        // Fitur Retur Barang
+        Route::post('/penjualan/{id}/packing-selesai', [PenjualanController::class, 'updateToPackingSelesai'])->name('penjualan.packingSelesai');
+        Route::post('/penjualan/{id}/send-to-backorder', [PenjualanController::class, 'sendToBackorder'])->name('penjualan.sendToBackorder');
+    });
+
+    // FITUR RETUR BARANG
+    Route::middleware(['role:direktur,return_barang'])->group(function () {
         Route::get('/warehouse/retur-penjualan', [ReturController::class, 'penjualanIndex'])->name('retur.penjualan.index');
         Route::post('/warehouse/retur-penjualan', [ReturController::class, 'penjualanStore'])->name('retur.penjualan.store');
         Route::get('/warehouse/retur-pembelian', [ReturController::class, 'pembelianIndex'])->name('retur.pembelian.index');
@@ -74,8 +81,6 @@ Route::middleware(['auth'])->group(function () {
         
         // EKSEKUSI RETURN PENDING (RMA)
         Route::post('/warehouse/retur-pembelian/eksekusi/{id}', [ReturController::class, 'eksekusiReturPending'])->name('retur.pembelian.eksekusi');
-
-        Route::post('/penjualan/{id}/packing-selesai', [PenjualanController::class, 'updateToPackingSelesai'])->name('penjualan.packingSelesai');
     });
 
     // HALAMAN KERJA DIVISI KEUANGAN & PIUTANG
@@ -86,14 +91,15 @@ Route::middleware(['auth'])->group(function () {
     // MANAJEMEN PENJUALAN (Riwayat SO)
     Route::get('/penjualan', [PenjualanController::class, 'index'])->name('penjualan.index');
 
-    // PERSETUJUAN, PEMBELIAN, USER, & ACTIVITY LOG (KHUSUS DIREKTUR & HAK AKSES)
+    // MASTER PEMBELIAN
     Route::middleware(['role:direktur,pembelian_stok'])->group(function () {
-        // Master Pembelian
         Route::get('/pembelian', [PembelianController::class, 'index'])->name('pembelian.index');
         Route::post('/pembelian', [PembelianController::class, 'store'])->name('pembelian.store');
         Route::post('/pembelian/{id}/sortir', [PembelianController::class, 'prosesSortir'])->name('pembelian.sortir');
+    });
 
-        // Master Data Supplier
+    // MASTER DATA SUPPLIER
+    Route::middleware(['role:direktur,data_supplier'])->group(function () {
         Route::get('/supplier', [SupplierController::class, 'index'])->name('supplier.index');
         Route::post('/supplier', [SupplierController::class, 'store'])->name('supplier.store');
         Route::put('/supplier/{id}', [SupplierController::class, 'update'])->name('supplier.update');
@@ -110,15 +116,18 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::middleware(['role:direktur'])->group(function () {
-        // Approval Direktur & Log Aktivitas mutlak hanya untuk Direktur Utama
+        // Approval Direktur mutlak hanya untuk Direktur Utama
         Route::get('/penjualan/approval', [PenjualanController::class, 'approvalList'])->name('penjualan.approval');
         Route::post('/penjualan/approve/{id}', [PenjualanController::class, 'approve'])->name('penjualan.approve');
+    });
+
+    Route::middleware(['role:direktur,audit_trail'])->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity_logs.index');
     });
 
     // KELOLA PENJUALAN (EDIT & HAPUS)
     Route::middleware(['role:sales,direktur'])->group(function () {
-        Route::get('/sales/dashboard', [DashboardController::class, 'index'])->name('sales.dashboard');
+        Route::get('/sales/dashboard', [DashboardController::class, 'salesIndex'])->name('sales.dashboard');
         Route::get('/penjualan/{id}/edit', [PenjualanController::class, 'edit'])->name('penjualan.edit');
         Route::put('/penjualan/{id}', [PenjualanController::class, 'update'])->name('penjualan.update');
         Route::delete('/penjualan/{id}', [PenjualanController::class, 'destroy'])->name('penjualan.destroy');
@@ -129,13 +138,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/penjualan/{id}', [PenjualanController::class, 'show'])->name('penjualan.show');
 
     // ANTRIAN BACK ORDER
-    Route::middleware(['role:direktur,admin_warehouse,warehouse,admin warehouse,backorder'])->group(function () {
+    Route::middleware(['role:direktur,backorder'])->group(function () {
         Route::get('/backorder', [BackOrderController::class, 'index'])->name('backorder.index');
         Route::post('/backorder/penebusan/{id}', [BackOrderController::class, 'penebusan'])->name('backorder.penebusan');
     });
 
     // DATA BARANG
-    Route::middleware(['role:direktur,admin_warehouse,warehouse,admin warehouse,data_barang'])->group(function () {
+    Route::middleware(['role:direktur,data_barang'])->group(function () {
         Route::get('/barang', [BarangController::class, 'index'])->name('barang.index');
         Route::post('/barang', [BarangController::class, 'store'])->name('barang.store');
         Route::get('/barang/{id}/edit', [BarangController::class, 'edit'])->name('barang.edit');
@@ -145,10 +154,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/barang/import', [BarangController::class, 'importCsv'])->name('barang.import');
     });
 
-    // KEUANGAN, PIUTANG, UTANG, CREDIT NOTE, & LAPORAN LABA
-    Route::middleware(['role:direktur,admin_keuangan,keuangan,admin keuangan,admin_piutang,admin piutang,keuangan'])->group(function () {
+    // LAPORAN LABA
+    Route::middleware(['role:direktur,profit_laba'])->group(function () {
         Route::get('/laporan/laba', [LabaController::class, 'index'])->name('laba.index'); 
-        
+    });
+
+    // KEUANGAN, PIUTANG, UTANG, CREDIT NOTE
+    Route::middleware(['role:direktur,akses_keuangan,admin_keuangan,keuangan'])->group(function () {
         Route::post('/keuangan/credit-note/store', [KeuanganController::class, 'storeCreditNote'])->name('keuangan.creditNote.store');
         Route::get('/keuangan/piutang', [KeuanganController::class, 'piutangIndex'])->name('keuangan.piutang.index');
         Route::get('/keuangan/piutang/{id}', [KeuanganController::class, 'piutangShow'])->name('keuangan.piutang.show');

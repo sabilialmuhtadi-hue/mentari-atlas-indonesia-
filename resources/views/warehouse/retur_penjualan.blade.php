@@ -20,6 +20,7 @@
     
     /* Card & Table Styling */
     .card-custom { border: 1px solid #e2e8f0; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .table-mentari thead th, .table-mentari thead th:last-child { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; border-bottom: none !important; font-weight: 600 !important; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; white-space: nowrap; }
     
     /* Soft Badges */
     .badge-success-soft { background-color: #d1fae5 !important; color: #065f46 !important; border: 1px solid #a7f3d0; }
@@ -67,60 +68,49 @@
     <h6 class="fw-bold text-slate-dark mb-3"><i class="fas fa-history me-2 text-blue-custom"></i>Riwayat Klaim Penjualan & Penyesuaian Saldo</h6>
     <div class="table-wrapper-mentari">
         <div class="table-responsive">
-            <table class="table table-mentari-blue align-middle mb-0" style="font-size: 0.85rem; width: 100%;">
+            <table class="table table-mentari align-middle mb-0" style="font-size: 0.85rem; width: 100%;">
                 <thead>
                     <tr>
                         <th class="ps-4">No. Klaim / Return</th>
-                        <th>Nota SO</th>
+                        <th>Nota SO / Customer</th>
                         <th>Nama Barang</th>
                         <th class="text-center">Qty</th>
-                        <th>Jenis Klaim</th>
-                        <th>Dampak Stok Utama</th>
                         <th>Potongan Piutang (CN)</th>
-                        <th>Alasan</th>
-                        <th class="text-center pe-4">Tanggal</th>
+                        <th>Status</th>
+                        <th class="text-center pe-4 sticky-action">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($returs as $retur)
                     <tr>
                         <td class="ps-4 fw-bold text-blue-custom">{{ $retur->no_retur_jual }}</td>
-                        <td><span class="badge badge-secondary-soft rounded-pill px-2 py-1 shadow-sm">{{ $retur->penjualan->no_so ?? 'N/A' }}</span></td>
+                        <td>
+                            <span class="badge badge-secondary-soft rounded-pill px-2 py-1 shadow-sm mb-1">{{ $retur->penjualan->no_so ?? 'N/A' }}</span>
+                            <div class="small fw-bold text-slate-dark mt-1"><i class="fas fa-user me-1 text-slate-muted"></i> {{ $retur->customer->nama_customer ?? 'Umum' }}</div>
+                        </td>
                         <td class="fw-bold text-slate-dark">{{ $retur->barang->nama_barang ?? 'N/A' }}</td>
                         <td class="text-center fw-bold">{{ $retur->qty_retur }}</td>
-                        <td>
-                            @if($retur->jenis_retur == 'fisik')
-                                <span class="badge badge-secondary-soft rounded-pill px-2 py-1"><i class="fas fa-box me-1"></i> Fisik Barang</span>
-                            @else
-                                <span class="badge badge-info-soft rounded-pill px-2 py-1"><i class="fas fa-tags me-1"></i> Koreksi Harga</span>
-                            @endif
-                        </td>
-                        <td>
-                            @if($retur->jenis_retur == 'fisik')
-                                @if($retur->status_kondisi == 'bagus')
-                                    <span class="text-success small fw-bold"><i class="fas fa-plus-circle me-1"></i>Ke Stok Bagus (+{{ $retur->qty_retur }})</span>
-                                @else
-                                    <span class="text-danger small fw-bold"><i class="fas fa-heart-broken me-1"></i>Ke Stok Rusak (+{{ $retur->qty_retur }})</span>
-                                @endif
-                            @else
-                                <span class="text-slate-muted small fst-italic">Tidak Mempengaruhi Stok</span>
-                            @endif
-                        </td>
                         <td>
                             <span class="text-slate-dark small fw-bold">
                                 <i class="fas fa-file-invoice-dollar me-1 text-blue-custom"></i>Rp {{ number_format($retur->nominal_potongan, 0, ',', '.') }}
                             </span>
                         </td>
-                        <td class="text-slate-muted text-truncate" style="max-width: 180px;" title="{{ $retur->alasan }}">
-                            {{ $retur->alasan }}
+                        <td>
+                            @if($retur->status_retur == 'pending')
+                                <span class="badge bg-warning text-dark rounded-pill px-2 py-1"><i class="fas fa-clock me-1"></i>Pending</span>
+                            @else
+                                <span class="badge bg-success rounded-pill px-2 py-1"><i class="fas fa-check-circle me-1"></i>Selesai</span>
+                            @endif
                         </td>
-                        <td class="text-center small text-slate-muted fw-bold pe-4">
-                            {{ \Carbon\Carbon::parse($retur->created_at)->format('d M Y H:i') }}
+                        <td class="text-center pe-4 sticky-action">
+                            <button type="button" class="btn btn-sm btn-outline-info rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#modalDetailRetur{{ $retur->id }}">
+                                <i class="fas fa-eye me-1"></i> Lihat Detail
+                            </button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="text-center py-5 text-slate-muted bg-white">
+                        <td colspan="7" class="text-center py-5 text-slate-muted bg-white">
                             <div class="d-flex flex-column align-items-center">
                                 <i class="fas fa-box-open d-block fa-3x mb-3 text-blue-custom opacity-25"></i>
                                 <span class="fw-bold text-slate-dark mb-1">Belum Ada Data Klaim Return</span>
@@ -226,6 +216,59 @@
         </form>
     </div>
 </div>
+
+{{-- MODAL DETAIL RETUR --}}
+@foreach($returs as $retur)
+<div class="modal fade" id="modalDetailRetur{{ $retur->id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered"> 
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem; overflow: hidden;">
+            <div class="modal-header bg-blue-custom text-white border-0 py-3">
+                <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2"></i>Detail Klaim Return</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <ul class="list-group list-group-flush rounded-3 shadow-sm">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-slate-muted fw-bold">Tanggal Klaim</span>
+                        <span class="fw-bold text-slate-dark">{{ \Carbon\Carbon::parse($retur->created_at)->format('d M Y H:i') }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-slate-muted fw-bold">Jenis Klaim</span>
+                        <span>
+                            @if($retur->jenis_retur == 'fisik')
+                                <span class="badge badge-secondary-soft rounded-pill px-2 py-1"><i class="fas fa-box me-1"></i> Fisik Barang</span>
+                            @else
+                                <span class="badge badge-info-soft rounded-pill px-2 py-1"><i class="fas fa-tags me-1"></i> Koreksi Harga</span>
+                            @endif
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-slate-muted fw-bold">Dampak Stok Utama</span>
+                        <span class="text-end">
+                            @if($retur->jenis_retur == 'fisik')
+                                @if($retur->status_kondisi == 'bagus')
+                                    <span class="text-success small fw-bold"><i class="fas fa-plus-circle me-1"></i>Ke Stok Bagus (+{{ $retur->qty_retur }})</span>
+                                @else
+                                    <span class="text-danger small fw-bold"><i class="fas fa-heart-broken me-1"></i>Ke Stok Rusak (+{{ $retur->qty_retur }})</span>
+                                @endif
+                            @else
+                                <span class="text-slate-muted small fst-italic">Tidak Mempengaruhi Stok</span>
+                            @endif
+                        </span>
+                    </li>
+                    <li class="list-group-item py-3">
+                        <span class="text-slate-muted fw-bold d-block mb-1">Alasan / Keterangan</span>
+                        <p class="mb-0 text-slate-dark">{{ $retur->alasan ?? '-' }}</p>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-white border-0 py-3">
+                <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endforeach
 
 <script>
     function toggleReturJualJenis() {

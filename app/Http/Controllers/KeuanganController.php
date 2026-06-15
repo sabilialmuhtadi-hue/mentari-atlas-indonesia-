@@ -12,6 +12,7 @@ use App\Models\PenjualanDetail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth; 
 use Carbon\Carbon; 
+use App\Models\ActivityLog;
 
 class KeuanganController extends Controller
 {
@@ -129,6 +130,13 @@ class KeuanganController extends Controller
 
             DB::commit();
 
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'BAYAR PIUTANG',
+                'description' => Auth::user()->name . ' mencatat pembayaran piutang customer sebesar Rp ' . number_format($bayar, 0, ',', '.'),
+                'ip_address' => request()->ip(),
+            ]);
+
             // NOTIFIKASI BERBEDA JIKA UPLOAD BUKTI VS TANPA UPLOAD BUKTI
             if ($pathBukti) {
                 return back()->with('success', "Cicilan senilai Rp " . number_format($bayar, 0, ',', '.') . " berhasil dicatat beserta bukti fisiknya.");
@@ -179,6 +187,7 @@ class KeuanganController extends Controller
         $request->validate([
             'jumlah_bayar' => 'required|numeric|min:1',
             'metode_pembayaran' => 'required|string',
+            'metode_pembayaran_lainnya' => 'required_if:metode_pembayaran,Lainnya|nullable|string|max:255',
             'keterangan' => 'nullable|string',
             'bukti_bayar' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
@@ -210,11 +219,17 @@ class KeuanganController extends Controller
                 $keteranganUtang = "Pembayaran utang {$nomorJurnal} via {$request->metode_pembayaran}.";
             }
 
+            // Logika Sortir Nama Metode Pembayaran
+            $metodeFinal = $request->metode_pembayaran;
+            if ($metodeFinal === 'Lainnya') {
+                $metodeFinal = trim($request->metode_pembayaran_lainnya);
+            }
+
             PembayaranUtang::create([
                 'utang_id' => $utang->id,
                 'jumlah_bayar' => $bayar,
                 'tanggal_bayar' => Carbon::now(),
-                'metode_pembayaran' => $request->metode_pembayaran,
+                'metode_pembayaran' => $metodeFinal,
                 'dibayar_oleh' => Auth::id(),
                 'keterangan' => $keteranganUtang,
                 'bukti_bayar' => $pathBukti 
@@ -234,7 +249,20 @@ class KeuanganController extends Controller
             ]);
 
             DB::commit();
-            return back()->with('success', "Pembayaran utang senilai Rp " . number_format($bayar, 0, ',', '.') . " berhasil dicatat beserta buktinya.");
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'BAYAR UTANG',
+                'description' => Auth::user()->name . ' mencatat pembayaran utang supplier sebesar Rp ' . number_format($bayar, 0, ',', '.'),
+                'ip_address' => request()->ip(),
+            ]);
+
+            // NOTIFIKASI BERBEDA JIKA UPLOAD BUKTI VS TANPA UPLOAD BUKTI
+            if ($pathBukti) {
+                return back()->with('success', "Pembayaran utang senilai Rp " . number_format($bayar, 0, ',', '.') . " berhasil dicatat beserta bukti fisiknya.");
+            } else {
+                return back()->with('success', "Pembayaran utang senilai Rp " . number_format($bayar, 0, ',', '.') . " berhasil dicatat ke sistem (Tanpa Lampiran Bukti).");
+            }
             
         } catch (\Exception $e) {
             DB::rollBack();

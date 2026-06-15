@@ -6,14 +6,23 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 
 class UserController extends Controller
 {
     public function index()
     {
         // Menampilkan seluruh daftar user aktif agar Direktur bisa memantau semuanya
-        // Diurutkan berdasarkan alfabet role agar rapi kelompoknya
-        $users = User::orderBy('role', 'asc')->get();
+        // Diurutkan berdasarkan hierarki: direktur, keuangan, warehouse, sales
+        $users = User::orderByRaw("
+            CASE 
+                WHEN role = 'direktur' THEN 1 
+                WHEN role = 'admin_keuangan' OR role = 'keuangan' THEN 2 
+                WHEN role = 'admin_warehouse' OR role = 'warehouse' THEN 3 
+                WHEN role = 'sales' THEN 4 
+                ELSE 5 
+            END
+        ")->orderBy('name', 'asc')->get();
                      
         return view('users.index', compact('users'));
     }
@@ -35,6 +44,13 @@ class UserController extends Controller
             'role' => $request->role,
             // Jika ada centangan, simpan. Jika kosong/tidak dicentang, simpan array kosong []
             'hak_akses' => $request->hak_akses ?? [], 
+        ]);
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'TAMBAH AKUN STAF',
+            'description' => Auth::user()->name . ' membuat akun staf baru: ' . $request->email,
+            'ip_address' => request()->ip(),
         ]);
 
         return back()->with('success', 'User baru berhasil ditambahkan.');
@@ -67,6 +83,13 @@ class UserController extends Controller
 
         $user->update($data);
 
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'EDIT AKUN STAF',
+            'description' => Auth::user()->name . ' memperbarui informasi akun/hak akses untuk: ' . $user->email,
+            'ip_address' => request()->ip(),
+        ]);
+
         return back()->with('success', 'User ' . $user->name . ' berhasil diperbarui.');
     }
 
@@ -79,7 +102,16 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Anda tidak bisa menghapus akun Anda sendiri!']);
         }
 
+        $emailUser = $user->email;
         $user->delete();
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'HAPUS AKUN STAF',
+            'description' => Auth::user()->name . ' menghapus akun staf: ' . $emailUser,
+            'ip_address' => request()->ip(),
+        ]);
+
         return back()->with('success', 'User berhasil dihapus.');
     }
 }

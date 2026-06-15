@@ -6,13 +6,23 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\Penjualan;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ActivityLog;
+use Illuminate\Support\Facades\Auth;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::orderBy('nama_customer', 'asc')->get();
-        return view('customer.index', compact('customers'));
+        $search = $request->input('search');
+        $query = Customer::query();
+
+        if ($search) {
+            $query->where('id_cust', 'like', "%{$search}%")
+                  ->orWhere('nama_customer', 'like', "%{$search}%");
+        }
+
+        $customers = $query->orderBy('created_at', 'asc')->get();
+        return view('customer.index', compact('customers', 'search'));
     }
 
     public function store(Request $request)
@@ -29,10 +39,11 @@ class CustomerController extends Controller
             'foto_toko'     => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->only(['nama_customer', 'no_telp', 'alamat', 'ktp', 'npwp']);
+        $data = $request->only(['nama_customer', 'no_telp', 'alamat', 'ktp', 'npwp', 'tempo_hari']);
         $data['id_cust'] = 'CS-' . date('YmdHis');
         $data['tingkat_customer'] = 'Bronze'; // Default awal
         $data['plafon'] = $request->plafon ?? 0;
+        $data['tempo_hari'] = $request->tempo_hari ?? 30;
 
         // Proses Upload Foto (Disimpan di folder storage/app/public/customers)
         if ($request->hasFile('foto_ktp')) {
@@ -45,7 +56,14 @@ class CustomerController extends Controller
             $data['foto_toko'] = $request->file('foto_toko')->store('customers', 'public');
         }
 
-        Customer::create($data);
+        $customer = Customer::create($data);
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'TAMBAH CUSTOMER',
+            'description' => Auth::user()->name . ' menambahkan customer baru: ' . $customer->id_cust . ' - ' . $customer->nama_customer,
+            'ip_address' => request()->ip(),
+        ]);
 
         return back()->with('success', 'Data Customer baru beserta dokumen berhasil ditambahkan!');
     }
@@ -66,8 +84,9 @@ class CustomerController extends Controller
             'foto_toko'     => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = $request->only(['nama_customer', 'no_telp', 'alamat', 'ktp', 'npwp']);
+        $data = $request->only(['nama_customer', 'no_telp', 'alamat', 'ktp', 'npwp', 'tempo_hari']);
         $data['plafon'] = $request->plafon ?? 0;
+        $data['tempo_hari'] = $request->tempo_hari ?? 30;
 
         // Proses Update Foto: Hapus foto lama jika ada upload foto baru
         if ($request->hasFile('foto_ktp')) {
@@ -84,6 +103,13 @@ class CustomerController extends Controller
         }
 
         $customer->update($data);
+
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'EDIT CUSTOMER',
+            'description' => Auth::user()->name . ' memperbarui data customer: ' . $customer->id_cust . ' - ' . $customer->nama_customer,
+            'ip_address' => request()->ip(),
+        ]);
 
         return back()->with('success', 'Profil dan Dokumen Customer ' . $customer->nama_customer . ' berhasil diperbarui!');
     }
@@ -116,19 +142,20 @@ class CustomerController extends Controller
         try {
             $customer = Customer::findOrFail($id);
             
-            if ($customer->penjualans()->count() > 0) {
-                return back()->withErrors(['error' => 'Customer tidak bisa dihapus karena sudah memiliki riwayat transaksi.']);
-            }
-            
-            // Hapus file fisik foto-foto agar tidak memenuhi server
-            if ($customer->foto_ktp) { Storage::disk('public')->delete($customer->foto_ktp); }
-            if ($customer->foto_npwp) { Storage::disk('public')->delete($customer->foto_npwp); }
-            if ($customer->foto_toko) { Storage::disk('public')->delete($customer->foto_toko); }
+            $namaCustomer = $customer->nama_customer;
+            $idCust = $customer->id_cust;
+            $customer->delete(); // Soft delete
 
-            $customer->delete();
-            return back()->with('success', 'Customer beserta data fotonya berhasil dihapus secara permanen.');
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'HAPUS CUSTOMER',
+                'description' => Auth::user()->name . ' menghapus (soft delete) data customer: ' . $idCust . ' - ' . $namaCustomer,
+                'ip_address' => request()->ip(),
+            ]);
+
+            return back()->with('success', 'Customer berhasil dihapus dari daftar aktif.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Gagal menghapus: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
     }
 }

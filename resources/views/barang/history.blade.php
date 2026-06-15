@@ -10,7 +10,12 @@
     .text-slate-muted { color: #64748b !important; }
     
     /* Card & Table Styling */
-    .card-custom { border: 1px solid #e2e8f0; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .card-custom { border: 1px solid #f1f5f9; border-radius: 1.25rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02); transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: white; overflow: hidden; position: relative; z-index: 1; }
+    .card-custom::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, #10b981, #0ea5e9); opacity: 0; transition: opacity 0.4s ease; }
+    .card-custom:hover::before { opacity: 1; }
+    .card-custom:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05); border-color: #e2e8f0; }
+    .card-custom:hover i.fa-2x { transform: scale(1.15) rotate(8deg); }
+    i.fa-2x { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
     .table-custom-header th { background-color: #f1f5f9 !important; color: #334155 !important; font-weight: 600 !important; border-bottom: 2px solid #e2e8f0 !important; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
     
     /* Custom Soft Border Colors */
@@ -31,7 +36,7 @@
     {{-- HEADER & TOMBOL KEMBALI --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
         <div>
-            <h1 class="h4 mb-1 text-slate-dark fw-bold"><i class="fas fa-history text-emerald-custom me-2"></i>Log Pergerakan Stok</h1>
+            <h1 class="h4 mb-1 text-slate-dark fw-bold"><i class="fas fa-history text-emerald-custom me-2"></i>Log Riwayat Data & Stok</h1>
             <div class="d-flex align-items-center mt-2">
                 <span class="badge badge-secondary-soft px-3 py-1.5 rounded-pill fw-bold letter-spacing-1 me-2">{{ $barang->kode_barang }}</span>
                 <span class="text-slate-muted fw-medium">{{ $barang->nama_barang }}</span>
@@ -52,8 +57,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-emerald-custom text-uppercase mb-1 tracking-wider" style="font-size: 0.7rem;">Stok Bagus</div>
-                            <div class="h4 mb-0 font-weight-bold text-slate-dark">{{ $barang->stok_akhir }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
+                            <div class="text-xs font-weight-bold text-emerald-custom text-uppercase mb-1 tracking-wider letter-spacing-wide" style="font-size: 0.7rem;">Stok Bagus</div>
+                            <div class="h2 mb-0 fw-bolder text-slate-dark">{{ $barang->stok_akhir }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-box-open fa-2x text-emerald-custom opacity-40"></i>
@@ -68,8 +73,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1 tracking-wider" style="font-size: 0.7rem;">Stok Rusak</div>
-                            <div class="h4 mb-0 font-weight-bold text-slate-dark">{{ $barang->stok_rusak ?? 0 }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1 tracking-wider letter-spacing-wide" style="font-size: 0.7rem;">Stok Rusak</div>
+                            <div class="h2 mb-0 fw-bolder text-slate-dark">{{ $barang->stok_rusak ?? 0 }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-heart-broken fa-2x text-danger opacity-40"></i>
@@ -84,8 +89,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1 tracking-wider" style="font-size: 0.7rem;">Total Masuk (In)</div>
-                            <div class="h4 mb-0 font-weight-bold text-slate-dark">{{ $barang->barang_masuk ?? 0 }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1 tracking-wider letter-spacing-wide" style="font-size: 0.7rem;">Total Masuk (In)</div>
+                            <div class="h2 mb-0 fw-bolder text-slate-dark">{{ $barang->barang_masuk ?? 0 }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-arrow-alt-circle-down fa-2x text-info opacity-40"></i>
@@ -100,8 +105,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1 tracking-wider" style="font-size: 0.7rem;">Barang Keluar (Out)</div>
-                            <div class="h4 mb-0 font-weight-bold text-slate-dark">{{ $barang->barang_keluar ?? 0 }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1 tracking-wider letter-spacing-wide" style="font-size: 0.7rem;">Barang Keluar (Out)</div>
+                            <div class="h2 mb-0 fw-bolder text-slate-dark">{{ $barang->barang_keluar ?? 0 }} <span class="fs-6 text-muted fw-normal">Unit</span></div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-arrow-alt-circle-up fa-2x text-warning opacity-40"></i>
@@ -116,8 +121,8 @@
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-slate-muted text-uppercase mb-1 tracking-wider" style="font-size: 0.7rem;">Harga Jual Valid</div>
-                            <div class="h5 mb-0 font-weight-bold text-slate-dark">Rp {{ number_format($barang->harga_jual, 0, ',', '.') }}</div>
+                            <div class="text-xs font-weight-bold text-slate-muted text-uppercase mb-1 tracking-wider letter-spacing-wide" style="font-size: 0.7rem;">Harga Jual Valid</div>
+                            <div class="h3 mb-0 fw-bolder text-slate-dark" style="letter-spacing: -1px;">Rp{{ number_format($barang->harga_jual, 0, ',', '.') }}</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-tags fa-2x text-slate-muted opacity-40"></i>

@@ -68,7 +68,7 @@
     {{-- TABEL DATA BACK ORDER (MENGGUNAKAN TEMA BARU) --}}
     <div class="table-wrapper-mentari">
         <div class="table-responsive">
-            <table class="table table-mentari align-middle">
+            <table class="table table-mentari table-mentari-compact align-middle mb-0" style="font-size: 0.85rem;">
                 <thead>
                     <tr>
                         <th class="ps-4">No. SO & Tanggal</th>
@@ -77,7 +77,7 @@
                         <th class="text-center">Permintaan Awal</th>
                         <th class="text-center">Kekurangan (BO)</th>
                         <th class="text-center">Status Antrean</th>
-                        <th class="text-end pe-4" style="width: 180px;">Tindakan</th>
+                        <th class="text-center sticky-action" style="width: 160px;">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody id="bo-table-body">
@@ -88,24 +88,24 @@
                         @endphp
                         <tr class="bo-row" data-status="{{ $kategoriFilter }}">
                             <td class="ps-4">
-                                <span class="fw-bold text-slate-dark d-block" style="font-size: 0.9rem;">{{ $bo->penjualan->no_so }}</span>
-                                <span class="text-slate-muted small"><i class="far fa-calendar-alt me-1"></i> {{ date('d M Y', strtotime($bo->penjualan->tanggal_order)) }}</span>
+                                <span class="fw-bold text-slate-dark d-block" style="font-size: 0.85rem;">{{ $bo->penjualan->no_so }}</span>
+                                <span class="text-slate-muted small" style="font-size: 0.75rem;"><i class="far fa-calendar-alt me-1"></i> {{ date('d M Y', strtotime($bo->penjualan->tanggal_order)) }}</span>
                             </td>
                             <td>
-                                <span class="fw-bold text-slate-dark d-block">{{ $bo->penjualan->customer->nama_customer }}</span>
-                                <span class="badge badge-secondary-soft rounded-pill px-2 py-1 mt-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                <span class="fw-bold text-slate-dark d-block" style="font-size: 0.85rem;">{{ $bo->penjualan->customer->nama_customer }}</span>
+                                <span class="badge badge-secondary-soft rounded-pill px-2 py-0.5 mt-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">
                                     <i class="fas fa-user-tie me-1"></i> {{ $bo->penjualan->user->name ?? 'Sales' }}
                                 </span>
                             </td>
                             <td>
-                                <span class="fw-bold text-emerald-custom d-block">{{ $bo->barang->nama_barang }}</span>
-                                <span class="text-slate-muted small">SKU: {{ $bo->barang->kode_barang }}</span>
+                                <span class="fw-bold text-emerald-custom d-block" style="font-size: 0.85rem;">{{ $bo->barang->nama_barang }}</span>
+                                <span class="text-slate-muted small" style="font-size: 0.75rem;">SKU: {{ $bo->barang->kode_barang }}</span>
                             </td>
-                            <td class="text-center fw-medium text-slate-muted">
+                            <td class="text-center fw-semibold text-slate-dark">
                                 {{ $bo->jumlah_diminta }} Pcs
                             </td>
                             <td class="text-center">
-                                <span class="badge badge-danger-soft fw-bold px-3 py-1.5 rounded-pill" style="font-size: 0.85rem;">
+                                <span class="badge badge-danger-soft fw-bold px-2.5 py-1 rounded-pill" style="font-size: 0.75rem;">
                                     <i class="fas fa-arrow-down me-1"></i> {{ $bo->jumlah_kurang }} Pcs
                                 </span>
                             </td>
@@ -113,33 +113,33 @@
                             {{-- INDIKATOR STATUS --}}
                             <td class="text-center">
                                 @if($kategoriFilter === 'completed')
-                                    <span class="badge badge-success-soft rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                    <span class="badge badge-success-soft rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
                                         <i class="fas fa-check-circle me-1"></i> Terpenuhi
                                     </span>
                                 @else
-                                    <span class="badge badge-warning-soft rounded-pill px-3 py-1.5 fw-bold shadow-sm">
+                                    <span class="badge badge-warning-soft rounded-pill px-2.5 py-1 fw-bold" style="font-size: 0.75rem;">
                                         <i class="fas fa-circle-notch fa-spin me-1"></i> Menunggu Stok
                                     </span>
                                 @endif
                             </td>
                             
                             {{-- TOMBOL TINDAKAN DINAMIS --}}
-                            <td class="text-end pe-4">
+                            <td class="text-center sticky-action">
                                 @if($kategoriFilter === 'pending')
                                     @if($bo->barang->stok_akhir >= $bo->jumlah_kurang)
                                         <form action="{{ route('backorder.penebusan', $bo->id) }}" method="POST" onsubmit="return confirm('Konfirmasi: Lepaskan sisa stok dan kemas barang sekarang?')">
                                             @csrf
-                                            <button type="submit" class="btn btn-emerald-custom btn-sm rounded-pill px-3 fw-bold shadow-sm" title="Stok tersedia: {{ $bo->barang->stok_akhir }} Unit. Klik untuk kirim barang.">
+                                            <button type="submit" class="btn btn-emerald-custom btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm" style="font-size: 0.75rem;" title="Stok tersedia: {{ $bo->barang->stok_akhir }} Unit. Klik untuk kirim barang.">
                                                 <i class="fas fa-box-open me-1"></i> Kemas Sisa
                                             </button>
                                         </form>
                                     @else
-                                        <a href="{{ url('/pembelian') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold shadow-sm" title="Stok gudang sisa {{ $bo->barang->stok_akhir ?? 0 }}, butuh total {{ $bo->jumlah_kurang }}.">
+                                        <a href="{{ url('/pembelian') }}" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm" style="font-size: 0.75rem;" title="Stok gudang sisa {{ $bo->barang->stok_akhir ?? 0 }}, butuh total {{ $bo->jumlah_kurang }}.">
                                             <i class="fas fa-truck-loading me-1"></i> Restock Dulu
                                         </a>
                                     @endif
                                 @else
-                                    <span class="text-slate-muted small fw-bold"><i class="fas fa-lock me-1"></i> Selesai</span>
+                                    <span class="text-slate-muted small fw-bold" style="font-size: 0.75rem;"><i class="fas fa-lock me-1"></i> Selesai</span>
                                 @endif
                             </td>
                         </tr>

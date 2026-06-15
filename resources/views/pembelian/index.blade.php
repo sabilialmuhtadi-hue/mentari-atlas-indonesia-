@@ -99,7 +99,7 @@
 
                         <div class="mb-3">
                             <label class="small fw-bold text-slate-dark mb-1">Pilih Item Barang <span class="text-danger">*</span></label>
-                            <select name="barang_id" id="barang_id" class="form-select select2-search" required>
+                            <select name="barang_id" id="barang_id" class="form-select select2-search" onchange="updateHPP(this)" required>
                                 <option value="">-- Cari SKU/Nama Barang --</option>
                                 @foreach($barangs as $b)
                                     @php
@@ -112,7 +112,7 @@
                                         
                                         $infoBO = $kurangBO > 0 ? " | ⚠️ Restock: $kurangBO" : "";
                                     @endphp
-                                    <option value="{{ $b->id }}">
+                                    <option value="{{ $b->id }}" data-hpp="{{ $b->harga_beli ?? 0 }}">
                                         [{{ $b->kode_barang }}] {{ $b->nama_barang }} (Sisa: {{ $b->stok_akhir ?? $b->stok ?? 0 }}{{ $infoBO }})
                                     </option>
                                 @endforeach
@@ -364,13 +364,6 @@
             width: '100%'
         });
 
-        $('#barang_id').select2({
-            theme: 'bootstrap-5',
-            placeholder: '-- Cari SKU/Nama Barang --',
-            allowClear: true,
-            width: '100%'
-        });
-
         $('#nama_supplier').select2({
             theme: 'bootstrap-5',
             placeholder: '-- Cari/Pilih Nama Supplier --',
@@ -378,6 +371,22 @@
             width: '100%'
         });
     });
+
+    function updateHPP(selectElement) {
+        if (!selectElement || selectElement.selectedIndex === -1) {
+            document.getElementById('harga_beli_hpp').value = '';
+            hitungTotal();
+            return;
+        }
+        var selectedOption = selectElement.options[selectElement.selectedIndex];
+        var hpp = selectedOption.getAttribute('data-hpp');
+        if (hpp !== null && hpp !== '') {
+            document.getElementById('harga_beli_hpp').value = hpp;
+        } else {
+            document.getElementById('harga_beli_hpp').value = '';
+        }
+        hitungTotal();
+    }
 
     function hitungTotal() {
         const qty = document.getElementById('jumlah_beli').value || 0;

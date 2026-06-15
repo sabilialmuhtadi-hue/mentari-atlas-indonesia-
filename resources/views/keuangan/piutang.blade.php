@@ -16,6 +16,7 @@
     
     /* Card & Table Styling */
     .card-custom { border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+    .table-mentari thead th, .table-mentari thead th:last-child { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; color: #ffffff !important; border-bottom: none !important; font-weight: 600 !important; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; white-space: nowrap; }
     
     /* Soft Badges Standar */
     .badge-success-soft { background-color: #d1fae5 !important; color: #065f46 !important; border: 1px solid #a7f3d0; }
@@ -69,7 +70,7 @@
     {{-- KONTEN UTAMA JURNAL PIUTANG --}}
     <div class="table-wrapper-mentari">
         <div class="table-responsive">
-            <table class="table table-mentari-blue table-mentari-compact align-middle mb-0" style="font-size: 0.8rem; width: 100%;">
+            <table class="table table-mentari table-mentari-compact align-middle mb-0" style="font-size: 0.8rem; width: 100%;">
                 <thead>
                     <tr>
                         <th class="ps-3 text-center" style="width: 1%;">No</th>

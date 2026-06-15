@@ -21,7 +21,7 @@ class StockHistory extends Model
 
     public function barang()
     {
-        return $this->belongsTo(Barang::class);
+        return $this->belongsTo(Barang::class)->withTrashed();
     }
 
     public static function record(Barang $barang, int $change, string $eventType, ?string $reference = null, ?string $keterangan = null, ?int $stockBefore = null)

@@ -95,6 +95,10 @@
                         <small class="text-slate-muted fw-bold text-uppercase" style="letter-spacing: 0.5px;">Pelanggan</small>
                         <div class="fs-5 text-slate-dark fw-bold">{{ $piutang->penjualan->customer->nama_customer ?? '-' }}</div>
                     </div>
+                    <div class="mb-4">
+                        <small class="text-slate-muted fw-bold text-uppercase" style="letter-spacing: 0.5px;"><i class="far fa-calendar-alt me-1 text-danger"></i>Tanggal Jatuh Tempo</small>
+                        <div class="fs-6 text-danger fw-bold">{{ \Carbon\Carbon::parse($piutang->jatuh_tempo)->format('d F Y') }}</div>
+                    </div>
                     
                     <hr class="border-secondary-subtle my-4">
 

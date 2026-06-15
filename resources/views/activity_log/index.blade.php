@@ -9,7 +9,7 @@
     .text-slate-muted { color: #64748b !important; }
     
     .card-custom { border: 1px solid #e2e8f0; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
-    .table-custom-header th { background-color: #f1f5f9 !important; color: #334155 !important; font-weight: 600 !important; border-bottom: 2px solid #e2e8f0 !important; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    .table-custom-header th { background-color: #10b981 !important; color: #ffffff !important; font-weight: 600 !important; border-bottom: 2px solid #059669 !important; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
     
     .log-row { transition: background-color 0.2s ease; }
     .log-row:hover { background-color: #f8fafc; }

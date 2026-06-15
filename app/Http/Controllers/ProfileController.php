@@ -28,6 +28,6 @@ class ProfileController extends Controller
         }
         $user->save();
 
-        return back()->with('success', 'Profil kantor berhasil diperbarui.');
+        return back()->with('success', 'Profil kantor berhasil diperbarui.')->with('profile_updated', true);
     }
 }

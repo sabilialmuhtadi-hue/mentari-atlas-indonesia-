@@ -3,10 +3,10 @@
 @section('content')
 @php
     $userRole = strtolower(Auth::user()->role);
-    $isSales = in_array($userRole, ['sales', 'marketing']);
     $isDirektur = ($userRole == 'direktur' || $userRole == 'superadmin');
     $hakAkses = Auth::user()->hak_akses ?? [];
 @endphp
+
 
 <style>
     /* Mengikuti Tema Emerald Premium Mentari Atlas */
@@ -16,53 +16,99 @@
     .text-slate-dark { color: #0f172a !important; }
     .text-slate-muted { color: #64748b !important; }
     
-    .stat-card { border: none; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); transition: transform 0.3s ease, box-shadow 0.3s ease; background: white; overflow: hidden; height: 100%; display: flex; flex-direction: column; justify-content: center; }
-    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-    .stat-icon-box { width: 56px; height: 56px; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
-    .chart-panel { background: white; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 1.5rem; }
+    /* Premium Gradient Stat Cards */
+    .stat-card { border: none; border-radius: 1.25rem; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; height: 100%; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 1; color: white; }
+    .stat-card::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%); transform: rotate(30deg); z-index: -1; pointer-events: none; }
+    .stat-card:hover { transform: translateY(-8px) scale(1.02); }
+    .stat-card:hover .stat-icon-box { transform: scale(1.1) rotate(10deg); background-color: rgba(255,255,255,0.3) !important; color: white !important; }
+    
+    .stat-card-1 { background: linear-gradient(135deg, #10b981 0%, #047857 100%); box-shadow: 0 15px 25px -5px rgba(16, 185, 129, 0.4); }
+    .stat-card-2 { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); box-shadow: 0 15px 25px -5px rgba(245, 158, 11, 0.4); }
+    .stat-card-3 { background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%); box-shadow: 0 15px 25px -5px rgba(14, 165, 233, 0.4); }
+    .stat-card-4 { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); box-shadow: 0 15px 25px -5px rgba(244, 63, 94, 0.4); }
+
+    .stat-icon-box { width: 64px; height: 64px; border-radius: 1rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; flex-shrink: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); background-color: rgba(255, 255, 255, 0.2) !important; color: white !important; backdrop-filter: blur(4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+    .stat-card p, .stat-card h2, .stat-card i { color: white !important; }
+    .chart-panel { background: white; border: none; border-radius: 1.25rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); padding: 1.5rem; }
 </style>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            @if($isSales)
-                <h1 class="h3 mb-0 text-slate-dark fw-bold">Area Kerja Sales</h1>
-                <p class="text-slate-muted small mb-0 mt-1">Pantau performa target penjualan dan status order Anda hari ini.</p>
-            @else
-                <h1 class="h3 mb-0 text-slate-dark fw-bold">Dashboard Eksekutif</h1>
-                <p class="text-slate-muted small mb-0 mt-1">Ringkasan performa bisnis dan pergerakan inventaris perusahaan.</p>
-            @endif
+            <h1 class="h3 mb-0 text-slate-dark fw-bold">Dashboard Eksekutif</h1>
+            <p class="text-slate-muted small mb-0 mt-1">Ringkasan performa bisnis dan pergerakan inventaris perusahaan.</p>
         </div>
         <div class="d-flex gap-2">
-            @if(!$isSales)
-            <a href="{{ url('/activity-logs') }}" class="btn rounded-pill px-4 shadow-sm border text-decoration-none d-inline-flex align-items-center" style="background-color: white; color: #475569; font-weight: 600;">
-                <i class="fas fa-history text-primary me-2"></i> Audit Trail
-            </a>
-            @endif
+            {{-- Tombol Audit Trail sudah dipindah ke Sidebar --}}
             
             {{-- Tombol Laporan lama di dashboard dihapus karena sekarang sudah ada di Menu Navigasi (Sidebar) --}}
         </div>
     </div>
 
     <div class="row g-4 mb-4 align-items-stretch">
-        @if($isSales)
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Total Order Saya</p><h3 class="fw-bold text-slate-dark mb-0">{{ $totalSO }}</h3><p class="text-primary small fw-bold mt-2 mb-0"><i class="fas fa-shopping-cart me-1"></i> Transaksi SO</p></div><div class="stat-icon-box text-primary" style="background-color: #e0f2fe;"><i class="fas fa-file-invoice"></i></div></div></div></div>
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Sedang Diproses</p><h3 class="fw-bold text-slate-dark mb-0">{{ $menungguApproval }}</h3><p class="text-warning small fw-bold mt-2 mb-0"><i class="fas fa-clock me-1"></i> Menunggu Direktur</p></div><div class="stat-icon-box text-warning" style="background-color: #fef3c7;"><i class="fas fa-hourglass-half"></i></div></div></div></div>
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Order Disetujui</p><h3 class="fw-bold text-slate-dark mb-0">{{ $statusData[0] }}</h3><p class="text-success small fw-bold mt-2 mb-0"><i class="fas fa-check-circle me-1"></i> Berhasil Goal</p></div><div class="stat-icon-box text-success" style="background-color: #d1fae5;"><i class="fas fa-thumbs-up"></i></div></div></div></div>
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Order Ditolak</p><h3 class="fw-bold text-danger mb-0">{{ $statusData[2] ?? 0 }}</h3><p class="text-danger small fw-bold mt-2 mb-0"><i class="fas fa-times-circle me-1"></i> Evaluasi Ulang</p></div><div class="stat-icon-box text-danger" style="background-color: #fee2e2;"><i class="fas fa-ban"></i></div></div></div></div>
-        @else
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Total Sales Order</p><h3 class="fw-bold text-slate-dark mb-0">{{ $totalSO }}</h3><p class="text-success small fw-bold mt-2 mb-0"><i class="fas fa-chart-line me-1"></i> Transaksi Tercatat</p></div><div class="stat-icon-box text-emerald-custom" style="background-color: #d1fae5;"><i class="fas fa-file-invoice-dollar"></i></div></div></div></div>
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Menunggu Approval</p><h3 class="fw-bold text-slate-dark mb-0">{{ $menungguApproval }}</h3><p class="text-warning small fw-bold mt-2 mb-0"><i class="fas fa-clock me-1"></i> Butuh Tindakan</p></div><div class="stat-icon-box text-warning" style="background-color: #fef3c7;"><i class="fas fa-user-check"></i></div></div></div></div>
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Total Item Inventaris</p><h3 class="fw-bold text-slate-dark mb-0">{{ number_format($totalBarang, 0, ',', '.') }}</h3><p class="text-emerald-custom small fw-bold mt-2 mb-0"><i class="fas fa-boxes me-1"></i> Master Data</p></div><div class="stat-icon-box text-primary" style="background-color: #e0f2fe;"><i class="fas fa-boxes"></i></div></div></div></div>
-            <div class="col-xl-3 col-md-6"><div class="stat-card p-4"><div class="d-flex justify-content-between align-items-center w-100"><div><p class="text-slate-muted small text-uppercase fw-bold mb-1">Peringatan Stok Kritis</p><h3 class="fw-bold text-danger mb-0">{{ $stokKritis }}</h3><p class="text-danger small fw-bold mt-2 mb-0"><i class="fas fa-exclamation-triangle me-1"></i> Segera Restock</p></div><div class="stat-icon-box text-danger" style="background-color: #fee2e2;"><i class="fas fa-box-open"></i></div></div></div></div>
-        @endif
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-1 p-4">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <p class="small text-uppercase fw-bold mb-1 letter-spacing-wide opacity-75">Total Sales Order</p>
+                        <h2 class="fw-bolder mb-0" style="font-size: 1.6rem;">{{ $totalSO }}</h2>
+                        <p class="small fw-bold mt-2 mb-0 opacity-75"><i class="fas fa-chart-line me-1"></i> Transaksi Tercatat</p>
+                    </div>
+                    <div class="stat-icon-box">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-2 p-4">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <p class="small text-uppercase fw-bold mb-1 letter-spacing-wide opacity-75">Menunggu Approval</p>
+                        <h2 class="fw-bolder mb-0" style="font-size: 1.6rem;">{{ $menungguApproval }}</h2>
+                        <p class="small fw-bold mt-2 mb-0 opacity-75"><i class="fas fa-clock me-1"></i> Butuh Tindakan</p>
+                    </div>
+                    <div class="stat-icon-box">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-3 p-4">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <p class="small text-uppercase fw-bold mb-1 letter-spacing-wide opacity-75">Total Item Inventaris</p>
+                        <h2 class="fw-bolder mb-0" style="font-size: 1.6rem;">{{ number_format($totalBarang, 0, ',', '.') }}</h2>
+                        <p class="small fw-bold mt-2 mb-0 opacity-75"><i class="fas fa-boxes me-1"></i> Master Data</p>
+                    </div>
+                    <div class="stat-icon-box">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="stat-card stat-card-4 p-4">
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <p class="small text-uppercase fw-bold mb-1 letter-spacing-wide opacity-75">Peringatan Stok Kritis</p>
+                        <h2 class="fw-bolder mb-0" style="font-size: 1.6rem;">{{ $stokKritis }}</h2>
+                        <p class="small fw-bold mt-2 mb-0 opacity-75"><i class="fas fa-exclamation-triangle me-1"></i> Segera Restock</p>
+                    </div>
+                    <div class="stat-icon-box">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="chart-panel h-100">
                 <h6 class="fw-bold text-slate-dark mb-4">
-                    @if($isSales) Tren Penjualan Saya (6 Bulan Terakhir) @else Tren Sales Order (6 Bulan Terakhir) @endif
+                    Tren Sales Order (6 Bulan Terakhir)
                 </h6>
                 <div id="salesChart" style="min-height: 300px;"></div>
             </div>
@@ -80,13 +126,56 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var salesOptions = {
-            series: [{ name: 'Total Pesanan (SO)', data: @json($salesData) }],
-            chart: { height: 320, type: 'area', fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false } },
-            colors: ['#10b981'], 
-            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } },
-            dataLabels: { enabled: false }, stroke: { curve: 'smooth', width: 3 },
+            series: [
+                { name: 'Omzet Penjualan (Rp)', type: 'area', data: @json($omzetData) },
+                { name: 'Total Pesanan (SO)', type: 'line', data: @json($salesData) }
+            ],
+            chart: { height: 320, type: 'line', fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false } },
+            colors: ['#10b981', '#f59e0b'], 
+            fill: { 
+                type: ['gradient', 'solid'], 
+                gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 90, 100] } 
+            },
+            dataLabels: { enabled: false }, 
+            stroke: { curve: 'smooth', width: [3, 4] },
             xaxis: { categories: @json($salesBulan), axisBorder: { show: false }, axisTicks: { show: false } },
-            yaxis: { labels: { offsetX: -10 } }, grid: { borderColor: '#e2e8f0', strokeDashArray: 4, yaxis: { lines: { show: true } } }
+            yaxis: [
+                {
+                    title: { text: "Omzet", style: { color: '#10b981', fontWeight: 'bold' } },
+                    labels: {
+                        formatter: function (val) {
+                            if (val >= 1000000000) return "Rp" + (val / 1000000000).toFixed(1) + "M";
+                            if (val >= 1000000) return "Rp" + (val / 1000000).toFixed(1) + "Jt";
+                            return "Rp" + val.toLocaleString('id-ID');
+                        },
+                        style: { colors: '#10b981', fontWeight: '600' }
+                    }
+                },
+                {
+                    opposite: true,
+                    title: { text: "Total SO", style: { color: '#f59e0b', fontWeight: 'bold' } },
+                    labels: {
+                        formatter: function (val) { return Math.round(val); },
+                        style: { colors: '#f59e0b', fontWeight: '600' }
+                    }
+                }
+            ],
+            tooltip: {
+                shared: true,
+                intersect: false,
+                y: {
+                    formatter: function (y, { seriesIndex }) {
+                        if (typeof y !== "undefined") {
+                            if (seriesIndex === 0) {
+                                return "Rp " + y.toLocaleString('id-ID');
+                            }
+                            return Math.round(y) + " Pesanan";
+                        }
+                        return y;
+                    }
+                }
+            },
+            grid: { borderColor: '#e2e8f0', strokeDashArray: 4 }
         };
         var salesChart = new ApexCharts(document.querySelector("#salesChart"), salesOptions);
         salesChart.render();

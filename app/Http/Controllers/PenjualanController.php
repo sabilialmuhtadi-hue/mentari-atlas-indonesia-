@@ -234,7 +234,60 @@ class PenjualanController extends Controller
     }
 
     // =========================================================================
-    // 5. FUNGSI WAREHOUSE PACKING (MEMOTONG STOK & MEMBUAT BACK ORDER)
+    // 5. FUNGSI SEND TO BACKORDER (KIRIM SO KE ANTREAN BO KARENA STOK KOSONG TOTAL)
+    // =========================================================================
+    public function sendToBackorder($id)
+    {
+        $penjualan = Penjualan::with('details')->findOrFail($id);
+
+        if ($penjualan->status_approval !== 'disetujui') {
+            return back()->with('error', 'Gagal: Order harus disetujui terlebih dahulu.');
+        }
+
+        // Cegah duplikasi jika sudah di-backorder
+        if ($penjualan->status === 'menunggu_restock') {
+            return redirect()->route('backorder.index')->with('success', 'Order sudah berada di antrean Back Order.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $penjualan->status = 'menunggu_restock';
+            $penjualan->save();
+
+            foreach ($penjualan->details as $detail) {
+                $barang = Barang::findOrFail($detail->barang_id);
+                
+                // Jika butuh dikirim, langsung jadikan backorder semuanya karena 0 shippable total
+                if ($detail->jumlah > 0) {
+                    BackOrder::create([
+                        'penjualan_id' => $penjualan->id,
+                        'barang_id' => $barang->id,
+                        'jumlah_diminta' => $detail->jumlah, 
+                        'jumlah_kurang' => $detail->jumlah,
+                        'status_bo' => 'antrean'
+                    ]);
+                }
+            }
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'KIRIM KE BO',
+                'description' => Auth::user()->name . ' memindahkan SO ' . $penjualan->no_so . ' ke antrean Back Order karena stok kosong.',
+                'ip_address' => request()->ip(),
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('backorder.index')->with('success', 'Order telah dipindahkan ke antrean Back Order. Silakan lakukan restock sebelum mem-packing.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Gagal memproses back order: ' . $e->getMessage()]);
+        }
+    }
+
+    // =========================================================================
+    // 6. FUNGSI WAREHOUSE PACKING (MEMOTONG STOK & MEMBUAT BACK ORDER PARSIAL)
     // =========================================================================
     public function updateToPackingSelesai($id)
     {
@@ -251,6 +304,9 @@ class PenjualanController extends Controller
         try {
             DB::beginTransaction();
 
+            // Ambil data BackOrder yang masih mengantre untuk SO ini
+            $activeBackorders = BackOrder::where('penjualan_id', $penjualan->id)->where('status_bo', 'antrean')->get();
+
             $penjualan->status = 'ready_to_invoice';
             $penjualan->save();
             
@@ -264,15 +320,25 @@ class PenjualanController extends Controller
                 $qtyDikirimSekarang = ($barang->stok_akhir >= $detail->jumlah) ? $detail->jumlah : max(0, $barang->stok_akhir);
                 $jumlahKurang = $detail->jumlah - $qtyDikirimSekarang;
 
+                $existingBo = $activeBackorders->where('barang_id', $barang->id)->first();
+
                 if ($jumlahKurang > 0) {
-                    BackOrder::create([
-                        'penjualan_id' => $penjualan->id,
-                        'barang_id' => $barang->id,
-                        'jumlah_diminta' => $detail->jumlah, 
-                        'jumlah_kurang' => $jumlahKurang,
-                        'status_bo' => 'antrean'
-                    ]);
+                    if ($existingBo) {
+                        $existingBo->update(['jumlah_kurang' => $jumlahKurang]);
+                    } else {
+                        BackOrder::create([
+                            'penjualan_id' => $penjualan->id,
+                            'barang_id' => $barang->id,
+                            'jumlah_diminta' => $detail->jumlah, 
+                            'jumlah_kurang' => $jumlahKurang,
+                            'status_bo' => 'antrean'
+                        ]);
+                    }
                     $adaBackOrder = true;
+                } else {
+                    if ($existingBo) {
+                        $existingBo->update(['status_bo' => 'terpenuhi']);
+                    }
                 }
 
                 if ($qtyDikirimSekarang > 0) {
@@ -302,7 +368,7 @@ class PenjualanController extends Controller
                     'potongan' => 0, 
                     'total_dibayar' => 0,
                     'status_bayar' => 'Belum Lunas',
-                    'jatuh_tempo' => \Carbon\Carbon::now()->addDays(30),
+                    'jatuh_tempo' => \Carbon\Carbon::now()->addDays($penjualan->customer->tempo_hari ?? 30),
                     'diinput_by' => Auth::id(),
                 ]
             );

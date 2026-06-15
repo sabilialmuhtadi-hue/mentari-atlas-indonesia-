@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReturPembelian extends Model
 {
-    protected $fillable = ['no_retur_beli', 'barang_id', 'qty_retur', 'nama_supplier', 'alasan'];
+    protected $fillable = ['no_retur_beli', 'barang_id', 'qty_retur', 'nama_supplier', 'alasan', 'status_retur'];
 
     protected static function booted()
     {
@@ -22,6 +22,6 @@ class ReturPembelian extends Model
 
     public function barang()
     {
-        return $this->belongsTo(Barang::class);
+        return $this->belongsTo(Barang::class)->withTrashed();
     }
 }

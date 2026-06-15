@@ -15,6 +15,6 @@ class Pembelian extends Model
     // Relasi ke tabel Barang
     public function barang()
     {
-        return $this->belongsTo(Barang::class, 'barang_id');
+        return $this->belongsTo(Barang::class, 'barang_id')->withTrashed();
     }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mentari Atlas Enterprise</title>
+    <title>Login - Mentari Atlas Indonesia</title>
     
     {{-- Pastikan ini mengarah ke file CSS/Bootstrap Anda --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -112,7 +112,10 @@
                     <div class="bg-white text-emerald rounded-circle d-flex align-items-center justify-content-center me-3 shadow" style="width: 48px; height: 48px;">
                         <i class="fas fa-layer-group fs-4"></i>
                     </div>
-                    <h2 class="fw-bold mb-0">Mentari<span class="fw-light">Atlas</span></h2>
+                    <div class="d-flex flex-column">
+                        <h2 class="fw-bold mb-0 lh-1">Mentari<span class="fw-light">Atlas</span></h2>
+                        <span class="text-white-50 text-uppercase mt-1" style="font-size: 0.75rem; letter-spacing: 4px; font-weight: 500;">Indonesia</span>
+                    </div>
                 </div>
                 <h4 class="fw-light mb-3">Sistem Manajemen Bisnis Terintegrasi</h4>
                 <p class="text-white-50 small mb-0" style="line-height: 1.6;">
@@ -134,7 +137,10 @@
                 {{-- Logo untuk tampilan mobile --}}
                 <div class="d-flex align-items-center mb-4 d-lg-none">
                     <i class="fas fa-layer-group fs-2 text-emerald me-2"></i>
-                    <h3 class="fw-bold text-slate-dark mb-0">Mentari<span class="text-emerald">Atlas</span></h3>
+                    <div class="d-flex flex-column">
+                        <h3 class="fw-bold text-slate-dark mb-0 lh-1">Mentari<span class="text-emerald">Atlas</span></h3>
+                        <span class="text-slate-muted text-uppercase" style="font-size: 0.65rem; letter-spacing: 3px; font-weight: 600; margin-top: 2px;">Indonesia</span>
+                    </div>
                 </div>
 
                 <div class="mb-4 mb-md-5">

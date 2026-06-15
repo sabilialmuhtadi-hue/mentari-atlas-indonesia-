@@ -60,10 +60,10 @@
                         <div class="mb-4">
                             <label class="form-label-custom">Pilih Rentang Waktu</label>
                             <select name="periode" id="periode" class="form-select form-select-custom mb-3">
-                                <option value="semua">Semua Transaksi (Total)</option>
+                                <option value="custom">Per Periode Tanggal (Custom)</option>
                                 <option value="bulan_ini">Bulan Ini</option>
                                 <option value="tahun_ini">Tahun Ini</option>
-                                <option value="custom">Per Periode Tanggal (Custom)</option>
+                                <option value="semua">Semua Transaksi (Total)</option>
                             </select>
 
                             <div class="row g-2 d-none" id="custom_date_wrapper">
