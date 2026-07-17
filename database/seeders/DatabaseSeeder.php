@@ -44,5 +44,9 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('keuangan123'),
             'role' => 'admin_keuangan',
         ]);
+
+        $this->call([
+            DummyDataSeeder::class,
+        ]);
     }
 }
