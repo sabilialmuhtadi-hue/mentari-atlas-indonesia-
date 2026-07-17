@@ -21,14 +21,14 @@ class DummyDataSeeder extends Seeder
         $faker = Faker::create('id_ID');
 
         // Nonaktifkan foreign key checks untuk truncate
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
         Customer::truncate();
         Supplier::truncate();
         Barang::truncate();
         Penjualan::truncate();
         PenjualanDetail::truncate();
         Piutang::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        \Illuminate\Support\Facades\Schema::enableForeignKeyConstraints();
 
         $salesUser = User::where('role', 'sales')->first() ?? User::first();
         $direkturUser = User::where('role', 'direktur')->first() ?? User::first();
